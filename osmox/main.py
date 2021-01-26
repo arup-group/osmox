@@ -3,7 +3,7 @@ import os
 import json
 import logging
 
-from osmbx import config, build
+from osmox import config, build
 
 
 default_config_path = os.path.abspath(
@@ -18,14 +18,14 @@ default_output_path = os.path.abspath(
 logger = logging.getLogger(__name__)
 
 @click.group()
-def osmbx():
+def osmox():
     """
     Access cli.
     """
     pass
 
 
-@osmbx.command()    
+@osmox.command()    
 @click.argument("config_path", nargs=1, type=click.Path(exists=True), required=True)
 def validate(config_path):
     """
@@ -36,7 +36,7 @@ def validate(config_path):
     logger.warning(f"Done.")
 
 
-@osmbx.command()
+@osmox.command()
 @click.option("-c", "--config_path", type=click.Path(exists=True), default=default_config_path,
               help="Path to config, eg './configs/default.csv'")
 @click.option("-i", "--input_path", type=click.Path(exists=False), default=default_input_path,

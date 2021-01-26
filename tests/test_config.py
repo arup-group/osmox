@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from osmbx import config
+from osmox import config
 
 root = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "fixtures")

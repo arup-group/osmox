@@ -3,7 +3,7 @@ import pytest
 from shapely.geometry import Point, Polygon
 import geopandas as gp
 
-from osmbx import config, build, helpers
+from osmox import config, build, helpers
 
 fixtures_root = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "fixtures")

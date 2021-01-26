@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from shapely.geometry import Point, Polygon
-from osmbx import helpers, build
+from osmox import helpers, build
 
 root = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "data")

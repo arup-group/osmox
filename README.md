@@ -7,8 +7,8 @@ A tool for extracting locations and features from Open Street Map (OSM) data.
 ## Install
 
 ```
-git clone https://github.com/fredshone/osmbx
-pip install osmbx
+git clone https://github.com/fredshone/osmox
+pip install osmox
 osmox pytest
 osmox --help
 ```
@@ -41,7 +41,7 @@ WIP
 
 ## Primary Functionality
 
-The primary use case for OSMBX is for extracting a representation of places where people can do various activities ('education' or 'work' or 'shop' for example). This is done applying a configured mapping to OSM tags:
+The primary use case for osmox is for extracting a representation of places where people can do various activities ('education' or 'work' or 'shop' for example). This is done applying a configured mapping to OSM tags:
 
 - **Filter** OSM objects based on OSM tags (eg: select 'building:yes' objects). Filtered objects are defined in a `config.json`. For example, if we were interested in extracting education type `buildings`:
 ```

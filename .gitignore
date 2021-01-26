@@ -1,5 +1,5 @@
 .DS_Store
-osmbx.egg-info/
+osmox.egg-info/
 fixtures
 *.osm.pbf
 __pycache__
