@@ -1,0 +1,9 @@
+.DS_Store
+osmbx.egg-info/
+fixtures
+*.osm.pbf
+__pycache__
+.vscode
+lib
+bin
+pyvenv.cfg
