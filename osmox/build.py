@@ -15,44 +15,49 @@ from osmox import config, helpers
 
 OSMTag = namedtuple('OSMtag', 'key value')
 OSMObject = namedtuple('OSMobject', 'idx, activity_tags, geom')
-
+AVAILABLE_FEATURES = [
+    "area",
+    "levels",
+    "floor_area",
+    "units",
+]
 
 class Object:
 
-    default_levels = {  # for if a level tag is required but not found
-            "apartments": 4,
-            "bungalow": 1,
-            "detached": 2,
-            "dormitory": 4,
-            "hotel": 3,
-            "residential": 2,
-            "semidetached_house": 2,
-            "terrace": 2,
-            "commercial": 1,
-            "retail": 1,
-            "supermarket": 1,
-            "industrial": 1,
-            "office": 4,
-            "warehouse": 1,
-            "bakehouse": 1,
-            "firestation": 2,
-            "government": 2,
-            "cathedral": 1,
-            "chapel": 1,
-            "church": 1,
-            "mosque": 1,
-            "religous": 1,
-            "shrine": 1,
-            "synagogue": 1,
-            "temple": 1,
-            "hospital": 4,
-            "kindergarden": 2,
-            "school": 2,
-            "university": 3,
-            "college": 3,
-            "sports_hall": 1,
-            "stadium": 1
-        }
+    DEFAULT_LEVELS = {  # for if a level tag is required but not found
+        "apartments": 4,
+        "bungalow": 1,
+        "detached": 2,
+        "dormitory": 4,
+        "hotel": 3,
+        "residential": 2,
+        "semidetached_house": 2,
+        "terrace": 2,
+        "commercial": 1,
+        "retail": 1,
+        "supermarket": 1,
+        "industrial": 1,
+        "office": 4,
+        "warehouse": 1,
+        "bakehouse": 1,
+        "firestation": 2,
+        "government": 2,
+        "cathedral": 1,
+        "chapel": 1,
+        "church": 1,
+        "mosque": 1,
+        "religous": 1,
+        "shrine": 1,
+        "synagogue": 1,
+        "temple": 1,
+        "hospital": 4,
+        "kindergarden": 2,
+        "school": 2,
+        "university": 3,
+        "college": 3,
+        "sports_hall": 1,
+        "stadium": 1
+    }
     
     def __init__(self, idx, osm_tags, activity_tags, geom) -> None:
         self.idx = idx
@@ -60,6 +65,40 @@ class Object:
         self.activity_tags = activity_tags
         self.geom = geom
         self.activities = None
+        self.features = {}
+
+
+    def add_features(self, features):
+        available = {
+            "area": self.area,
+            "levels": self.levels,
+            "floor_area": self.floor_area,
+            "units": self.units,
+        }
+        for f in features:
+            self.features[f] = available[f]()
+
+    def area(self):
+        return int(self.geom.area)
+
+    def levels(self):
+        if 'building:levels' in self.osm_tags:
+            return int(self.osm_tags['building:levels'])  # todo ensure integer
+        if 'height' in self.osm_tags:
+            height = helpers.height_to_m(self.osm_tags['height'])
+            if height:
+                return int(height / 4)
+        if self.osm_tags["building"] in self.DEFAULT_LEVELS:
+            return self.DEFAULT_LEVELS[self.osm_tags["building"]]
+        return 2
+
+    def floor_area(self):
+        return self.area() * self.levels()
+
+    def units(self):
+        if 'building:flats' in self.osm_tags:
+            return int(self.osm_tags['building:flats'])
+        return 1
 
     def __str__(self):
         return f"""
@@ -77,7 +116,7 @@ class Object:
                 self.activity_tags.extend(o.activity_tags)
 
     def apply_default_tag(self, tag):
-        self.activity_tags = [OSMTag("default", tag)]
+        self.activity_tags = [OSMTag(tag[0], tag[1])]
 
     def assign_points(self, points):
         snaps = [c for c in points.intersection(self.geom.bounds)]
@@ -87,12 +126,12 @@ class Object:
 
     def assign_areas(self, areas):
         snaps = [c for c in areas.intersection(self.geom.bounds)]
-        snaps = [(c, c.area) for c in snaps if c.geom.contains(self.geom)]
+        snaps = [c for c in snaps if c.geom.contains(self.geom.centroid)]
         if snaps:
             self.add_tags(snaps)
             return True
 
-    def assign_activities(self, activity_lookup, weight_calculations):
+    def assign_activities(self, activity_lookup, weight_calculations=None):
         """
         Create a list of unique activities based on activity tags.
         This method is currently kept here incase we want to deal with 
@@ -100,35 +139,17 @@ class Object:
         """
         act_set = set()
         for tag in self.activity_tags:
-            for acts in activity_lookup[tag.key][tag.value]:
-                act_set |= set(acts)
+            act_set |= set(activity_lookup.get(tag.key,{}).get(tag.value,[]))
         self.activities = list(act_set)
 
-    def add_features(self, features):
-        for f in features:
-            pass
+    def summary(self):
+        fixed = {
+            "id": self.idx,
+            "activities": ','.join(self.activities),
+            "geometry": self.geom.centroid
+        }
+        return {**fixed, **self.features}
 
-    def area(self):
-        return int(self.geom.area)
-
-    def levels(self):
-        if 'building:levels' in self.osm_tags:
-            return int(self.osm_tags['building:levels'])  # todo ensure integer
-        if 'height' in self.osm_tags:
-            height = helpers.height_to_m(self.osm_tags['height'])
-            if height:
-                return int(height / 3.5)
-        if self.osm_tags["building"] in self.default_levels:
-            return self.default_levels[self.osm_tags["building"]]
-        return 2
-
-    def floor_area(self):
-        return self.area() * self.levels()
-
-    def units(self):
-        if 'building:flats' in self.osm_tags:
-            return int(self.osm_tags['building:flats'])
-        return 1
 
 class ObjectHandler(osmium.SimpleHandler):
 
@@ -143,7 +164,7 @@ class ObjectHandler(osmium.SimpleHandler):
         self.filter = self.cnfg["filter"]
         self.features_config = self.cnfg["features_config"]
         self.default_activities = self.cnfg["default_activities"]
-        self.activity_mapping = self.cnfg["activity_mapping"]
+        self.activity_config = self.cnfg["activity_config"]
         self.transformer = Transformer.from_proj(Proj(from_crs), Proj(crs))
 
         self.objects = helpers.AutoTree()
@@ -176,7 +197,7 @@ class ObjectHandler(osmium.SimpleHandler):
             tags = dict(tags)
             found = []
             for osm_key, osm_val in tags.items():
-                if osm_key in self.activity_mapping and osm_val in self.activity_mapping[osm_key]:
+                if osm_key in self.activity_config and osm_val in self.activity_config[osm_key]:
                     found.append(OSMTag(key=osm_key, value=osm_val))
             return found
 
@@ -254,22 +275,25 @@ class ObjectHandler(osmium.SimpleHandler):
                     obj.apply_default_tag(a)
 
     def assign_activities(self):
+        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+            obj.assign_activities(self.activity_config)
 
-        for b in self.buildings:
-            b.assign_activities(self.activity_lookup)
-
-    def extract_buildings(self):
-        df = pd.DataFrame.from_records(
-            ((b.idx, str(list(b.activities.keys())), b.geom) for b in self.buildings),
-            columns=['idx', 'tags', 'geom']
+    def add_features(self):
+        """
+        ["units", "floors", "area", "floor_area"]
+        """
+        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+            obj.add_features(self.features_config)
+    
+    def dataframe(self):
+        df = pd.DataFrame(
+            (b.summary() for b in self.objects)
         )
-        print(df.head)
-        return gp.GeoDataFrame(df, geometry='geom')
+        return gp.GeoDataFrame(df, geometry='geometry')
         
-    def extract(self):
-        df = pd.DataFrame.from_records(
-            ((b.idx, b.geom.centroid) for b in self.buildings),
-            columns=['idx', 'tags', 'geom']
-        )
-        print(df.head)
-        return gp.GeoDataFrame(df, geometry='geom')
+    # def extract(self):
+    #     df = pd.DataFrame.from_records(
+    #         ((b.idx, b.geom.centroid) for b in self.objects),
+    #         columns=['idx', 'tags', 'geom']
+    #     )
+    #     return gp.GeoDataFrame(df, geometry='geom')

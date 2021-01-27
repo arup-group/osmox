@@ -13,7 +13,7 @@ default_input_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../tests/data/isle-of-man-latest.osm.pbf")
 )
 default_output_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../outputs/osmfs.geojson")
+    os.path.join(os.path.dirname(__file__), "../outputs/example.geojson")
 )
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ def run(config_path, input_path, output_path):
     config.validate_activity_config(cnfg)
     handler = build.ObjectHandler(cnfg)
     handler.apply_file(input_path, locations=True, idx='flex_mem')
-    logger.info(f" Found {len(handler.buildings)} buildings.")
+    logger.info(f" Found {len(handler.objects)} buildings.")
     logger.info(f" Found {len(handler.points)} nodes with valid tags.")
     logger.info(f" Found {len(handler.areas)} areas with valid tags.")
 
@@ -58,10 +58,15 @@ def run(config_path, input_path, output_path):
     handler.assign_tags()
     logger.info(f" Finished assigning tags: f{handler.log}.")
 
-    logger.info(f" Assigning building activities and weights.")
+    logger.info(f" Assigning building activities.")
     handler.assign_activities()
 
-    gdf = handler.extract_buildings()
+    if cnfg.get("features_config"):
+        logger.info(f" Assigning building features: {cnfg['features_config']}.")
+        handler.add_features()
+
+    gdf = handler.dataframe()
+
     logger.info(f" Outputting facility sample {output_path}")
     with open(output_path, "w") as file:
         file.write(gdf.to_json())

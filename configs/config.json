@@ -37,9 +37,9 @@
         ]
     },
 
-    "features_config": ["units", "floors", "area", "floor_area"],
+    "features_config": ["units", "levels", "area", "floor_area"],
 
-    "default_activities": ["home"],
+    "default_activities": [["building", "residential"]],
 
     "activity_config": {
         "building": {

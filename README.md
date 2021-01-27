@@ -9,15 +9,30 @@ A tool for extracting locations and features from Open Street Map (OSM) data.
 ```
 git clone https://github.com/fredshone/osmox
 pip install osmox
-osmox pytest
+# or pip -e install osmox
+cd osmox
+pytest
 osmox --help
+osmox run --help
+Usage: osmox run [OPTIONS]
+
+Options:
+  -c, --config_path PATH  Path to config, eg './configs/default.csv'
+  -i, --input_path PATH   Path to input osm map, eg './example.osm.pbf'
+  -o, --output_path PATH  Putput path, eg './example.geojson'
+  --help                  Show this message and exit.
 ```
 
 ## Run
 
+Configs are important:
 ```
-osmox validate <CONFIG PATH>
-osmox run <CONFIG PATH> <INPUT OSM/OSM.PBF PATH> <OUTPUT PATH>
+osmox validate -c <CONFIG PATH>
+```
+
+The example main run method:
+```
+osmox run -c configs/config.json -i fixtures/isle-of-wight-latest.osm.pbf -o demo/iow.geojson
 ```
 
 ## Output
@@ -31,6 +46,7 @@ WIP
         osm: ,
         area: ,
         floors: ,
+        ...
     }
 ]
 
