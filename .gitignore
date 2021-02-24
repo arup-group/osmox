@@ -7,3 +7,5 @@ __pycache__
 lib
 bin
 pyvenv.cfg
+outputs
+testing.ipynb

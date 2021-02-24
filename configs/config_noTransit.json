@@ -158,17 +158,6 @@
         "office": {
             "accountant": ["work"]
 
-        },
-	"railway": {
-	    "station": ["transit_stop"],
-	    "stop": ["transit_stop"],
-	    "tram_stop": ["transit_stop"]
-	},
-	"highway": {
-		"bus_stop": ["transit_stop"]
-        },
-	"public_transport": {
-		"station": ["transit_stop"]
         }
     }
 }

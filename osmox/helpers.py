@@ -101,3 +101,17 @@ def progressBar(iterable, prefix = '', suffix = '', decimals = 1, length = 100, 
         printProgressBar(i + 1)
     # Print New Line on Complete
     print()
+
+def get_distance(p):
+    """
+    Return the distance between two shapely points
+    Assumes orthogonal projection in meters
+    :params tuple p: A tuple conctaining two Shapely points
+
+    :return float: Distance in meters
+    """
+    distance = (
+        (p[0].x - p[1].x)**2 +\
+        (p[0].y - p[1].y)**2
+    ) ** 0.5
+    return distance
