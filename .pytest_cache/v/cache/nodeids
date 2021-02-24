@@ -1,0 +1,12 @@
+[
+  "tests/test_activityhandler.py::test_innit",
+  "tests/test_activityhandler.py::test_object_assign_points",
+  "tests/test_activityhandler.py::test_object_assign_areas",
+  "tests/test_activityhandler.py::test_load_toy",
+  "tests/test_autotree.py::test_autotree_insert",
+  "tests/test_autotree.py::test_autotree_point_point_intersection",
+  "tests/test_autotree.py::test_autotree_point_poly_intersection",
+  "tests/test_autotree.py::test_autotree_poly_poly_intersection",
+  "tests/test_autotree.py::test_autotree_iter",
+  "tests/test_config.py::test_load_config"
+]
