@@ -1,5 +1,0 @@
-{
-  "tests/test_activityhandler.py::test_innit": true,
-  "tests/test_activityhandler.py::test_load_toy": true,
-  "tests/test_config.py::test_load_config": true
-}

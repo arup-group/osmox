@@ -37,7 +37,7 @@
         ]        
     },
 
-    "features_config": ["units", "levels", "area", "floor_area", "transit_distance"],
+    "features_config": ["units", "levels", "area", "floor_area"],
 
     "default_activities": [["building", "residential"]],
 
