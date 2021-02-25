@@ -61,6 +61,10 @@ def run(config_path, input_path, output_path):
     logger.info(f" Assigning building activities.")
     handler.assign_activities()
 
+    if 'transit_stop' in config.get_acts(cnfg):
+        logger.info(f" Assigning distances from nearest transit stop.")
+        handler.assign_transit_stop_distances()
+
     if cnfg.get("features_config"):
         logger.info(f" Assigning building features: {cnfg['features_config']}.")
         handler.add_features()

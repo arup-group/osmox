@@ -11,9 +11,7 @@ def load(config_path):
     with open(config_path, "r") as read_file:
         return json.load(read_file)
 
-
-def validate_activity_config(config):
-
+def get_acts(config):
     activity_config = config["activity_config"]    
     if activity_config:
         acts = set()
@@ -22,6 +20,13 @@ def validate_activity_config(config):
                 for act in act_list:
                     acts.add(act)
 
+        return acts
+
+def validate_activity_config(config):
+
+    activity_config = config["activity_config"]    
+    if activity_config:
+        acts = get_acts(config)
         logger.warning(f"Configured activities: {sorted(acts)}")
 
     else:

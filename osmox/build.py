@@ -6,8 +6,9 @@ import osmium
 import shapely.wkb as wkblib
 import logging
 from collections import namedtuple
-from pyproj import Proj, Transformer
-from shapely.ops import transform
+from pyproj import Proj, Transformer, CRS
+from shapely.ops import transform, nearest_points
+from shapely.geometry import Point, MultiPoint
 
 
 from osmox import config, helpers
@@ -20,6 +21,7 @@ AVAILABLE_FEATURES = [
     "levels",
     "floor_area",
     "units",
+    "transit_distance"
 ]
 
 class Object:
@@ -65,6 +67,7 @@ class Object:
         self.activity_tags = activity_tags
         self.geom = geom
         self.activities = None
+        self._transit_distance = None
         self.features = {}
 
 
@@ -74,6 +77,7 @@ class Object:
             "levels": self.levels,
             "floor_area": self.floor_area,
             "units": self.units,
+            "transit_distance": self.transit_distance
         }
         for f in features:
             self.features[f] = available[f]()
@@ -142,6 +146,19 @@ class Object:
             act_set |= set(activity_lookup.get(tag.key,{}).get(tag.value,[]))
         self.activities = list(act_set)
 
+    def add_transit_distance(self, transit_stops):
+        """
+        Calculate euclidean distance from nearest transit stop
+        :params Multipoint transit_stops: A Shapely Multipoint object of all transit stops 
+        """
+        nearest_stop = nearest_points(self.geom.centroid, transit_stops)
+        transit_distance = helpers.get_distance(nearest_stop)        
+        self._transit_distance = transit_distance
+
+    # @property
+    def transit_distance(self):
+        return self._transit_distance
+
     def summary(self):
         fixed = {
             "id": self.idx,
@@ -165,11 +182,12 @@ class ObjectHandler(osmium.SimpleHandler):
         self.features_config = self.cnfg["features_config"]
         self.default_activities = self.cnfg["default_activities"]
         self.activity_config = self.cnfg["activity_config"]
-        self.transformer = Transformer.from_proj(Proj(from_crs), Proj(crs))
+        self.transformer = Transformer.from_crs(CRS(from_crs), CRS(crs), always_xy=True)
 
         self.objects = helpers.AutoTree()
         self.points = helpers.AutoTree()
         self.areas = helpers.AutoTree()
+        self.transit_stops = []
 
         self.log = {
             "existing": 0,
@@ -214,7 +232,7 @@ class ObjectHandler(osmium.SimpleHandler):
         if geom:
             geom = transform(self.transformer.transform, geom)
             self.areas.auto_insert(OSMObject(idx=idx, activity_tags=activity_tags, geom=geom))
-    
+
     def fab_point(self, n):
         try:
             wkb = self.wkbfab.create_point(n)
@@ -277,6 +295,29 @@ class ObjectHandler(osmium.SimpleHandler):
     def assign_activities(self):
         for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
             obj.assign_activities(self.activity_config)
+
+    def extract_transit_stops(self):
+        """
+        Find and store all transit stops 
+        """
+        self.transit_stops = []
+        for obj in self.points.objects:
+            for tag in obj.activity_tags:
+                activity = self.activity_config.get(tag.key,{}).get(tag.value,[])
+                if activity == ['transit_stop']:
+                    self.transit_stops.append(Point(obj.geom.x, obj.geom.y))
+        self.transit_stops = MultiPoint(self.transit_stops)
+
+    def add_transit_stop_distances(self):
+        """
+        For each facility, calculate euclidean distance to nearest transit stop
+        """
+        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+            obj.add_transit_distance(self.transit_stops)
+
+    def assign_transit_stop_distances(self):
+        self.extract_transit_stops()
+        self.add_transit_stop_distances()
 
     def add_features(self):
         """

@@ -37,7 +37,7 @@
         ]        
     },
 
-    "features_config": ["units", "levels", "area", "floor_area", "transit_distance"],
+    "features_config": ["units", "levels", "area", "floor_area"],
 
     "default_activities": [["building", "residential"]],
 
@@ -158,17 +158,6 @@
         "office": {
             "accountant": ["work"]
 
-        },
-	"railway": {
-	    "station": ["transit_stop"],
-	    "stop": ["transit_stop"],
-	    "tram_stop": ["transit_stop"]
-	},
-	"highway": {
-		"bus_stop": ["transit_stop"]
-        },
-	"public_transport": {
-		"station": ["transit_stop"]
         }
     }
 }

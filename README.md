@@ -7,7 +7,7 @@ A tool for extracting locations and features from Open Street Map (OSM) data.
 ## Install
 
 ```
-git clone https://github.com/fredshone/osmox
+git clone git@github.com:arup-group/osmox.git
 pip install osmox
 # or pip -e install osmox
 cd osmox
@@ -87,7 +87,7 @@ These configs get looong - but we've supplied some full examples in the project.
 
 ## Spatial Inference:
 
-Because OSMObjects to not always contain useful tags, we also infer object tags based on spatial operations with surrounding tags. The most common use case for this are building objects that are simply tagged as `building:yes`. We use the below logic to infer useful tags, such as 'building:shop' or 'building:residential'.
+Because OSMObjects do not always contain useful tags, we also infer object tags based on spatial operations with surrounding tags. The most common use case for this are building objects that are simply tagged as `building:yes`. We use the below logic to infer useful tags, such as 'building:shop' or 'building:residential'.
 
 - **Contains.** - If an OSMObject has no activity mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
 - **Within.** - Where an OSM object *still* does not have a useful OSM tag - tags are assigned based on the tags of objects that contain the object. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `landuse:residential`.
