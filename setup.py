@@ -12,7 +12,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pandas==0.23.4",
-        "osmium==2.15.3",
+        "osmium==3.1.3",
         "pytest==3.7.1",
         "Shapely==1.6.4.post2",
         "setuptools==42.0.1",
