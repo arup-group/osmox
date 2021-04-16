@@ -12,7 +12,7 @@ def load(config_path):
         return json.load(read_file)
 
 def get_acts(config):
-    activity_config = config["activity_config"]    
+    activity_config = config["activity_mapping"]    
     if activity_config:
         acts = set()
         for _tag_key, t_dict in activity_config.items():
@@ -24,7 +24,7 @@ def get_acts(config):
 
 def validate_activity_config(config):
 
-    activity_config = config["activity_config"]    
+    activity_config = config["activity_mapping"]    
     if activity_config:
         acts = get_acts(config)
         logger.warning(f"Configured activities: {sorted(acts)}")

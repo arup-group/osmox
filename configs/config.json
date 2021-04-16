@@ -41,7 +41,7 @@
 
     "default_activities": [["building", "residential"]],
 
-    "activity_config": {
+    "activity_mapping": {
         "building": {
             "apartments": ["home"],
             "bungalow": ["home"],

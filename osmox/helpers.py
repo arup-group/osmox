@@ -1,7 +1,15 @@
 import logging
+import click
+from pathlib import Path
 from rtree import index
 
 logger = logging.getLogger(__name__)
+
+
+class PathPath(click.Path):
+    """A Click path argument that returns a pathlib Path, not a string"""
+    def convert(self, value, param, ctx):
+        return Path(super().convert(value, param, ctx))
 
 
 class AutoTree(index.Index):
@@ -14,9 +22,9 @@ class AutoTree(index.Index):
         self.objects = []
         self.counter = 0
 
-    def auto_insert(self, facility):
-        super().insert(self.counter, facility.geom.bounds)
-        self.objects.append(facility)
+    def auto_insert(self, object):
+        super().insert(self.counter, object.geom.bounds)
+        self.objects.append(object)
         self.counter += 1
 
     def intersection(self, coordinates):
@@ -43,7 +51,8 @@ def dict_list_match(d, dict_list):
     dict_list_match({2:1}, {1:[1,2,3]}) == False
     """
     for k, v, in d.items():
-        if v in dict_list.get(k, []):
+        viable = dict_list.get(k, [])
+        if v in viable or viable == "*":
             return True
     return False
 
@@ -52,12 +61,33 @@ def height_to_m(height):
     """
     Parse height to float in metres.
     """
-    if height.isnumeric():
+    height.strip()
+    if is_float(height):
         return float(height)
+
+    if "m" in height:
+        height.replace("m", "")
+        if is_float(height):
+            return float(height)
+
+    if "ft" in height:
+        height.replace("ft", "")
+        if is_float(height):
+            return float(height) * 3
+
     if "'" in height:
         return imperial_to_metric(height)
-    logger.warning(f"Unable to convert height '{height} to metres, returning 'None'.")
-    return None
+
+    logger.warning(f"Unable to convert height {height} to metres, returning 3")
+    return 3
+
+
+def is_float(number):
+    try:
+        float(number)
+        return True
+    except ValueError:
+        return False
 
 
 def imperial_to_metric(height):

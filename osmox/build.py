@@ -67,7 +67,6 @@ class Object:
         self.activity_tags = activity_tags
         self.geom = geom
         self.activities = None
-        self._transit_distance = None
         self.features = {}
 
 
@@ -77,7 +76,6 @@ class Object:
             "levels": self.levels,
             "floor_area": self.floor_area,
             "units": self.units,
-            "transit_distance": self.transit_distance
         }
         for f in features:
             self.features[f] = available[f]()
@@ -87,14 +85,18 @@ class Object:
 
     def levels(self):
         if 'building:levels' in self.osm_tags:
-            return int(self.osm_tags['building:levels'])  # todo ensure integer
+            levels = self.osm_tags['building:levels']
+            if levels.isnumeric():
+                return float(levels)  # todo ensure integer
         if 'height' in self.osm_tags:
             height = helpers.height_to_m(self.osm_tags['height'])
             if height:
-                return int(height / 4)
-        if self.osm_tags["building"] in self.DEFAULT_LEVELS:
-            return self.DEFAULT_LEVELS[self.osm_tags["building"]]
-        return 2
+                return float(height / 4)
+        if self.osm_tags.get("building"):
+            if self.osm_tags["building"] in self.DEFAULT_LEVELS:
+                return self.DEFAULT_LEVELS[self.osm_tags["building"]]
+            return 2
+        return 1
 
     def floor_area(self):
         return self.area() * self.levels()
@@ -146,14 +148,13 @@ class Object:
             act_set |= set(activity_lookup.get(tag.key,{}).get(tag.value,[]))
         self.activities = list(act_set)
 
-    def add_transit_distance(self, transit_stops):
+    def get_closest_distance(self, targets, name):
         """
-        Calculate euclidean distance from nearest transit stop
-        :params Multipoint transit_stops: A Shapely Multipoint object of all transit stops 
+        Calculate euclidean distance to nearest target
+        :params Multipoint targets: A Shapely Multipoint object of all targets
         """
-        nearest_stop = nearest_points(self.geom.centroid, transit_stops)
-        transit_distance = helpers.get_distance(nearest_stop)        
-        self._transit_distance = transit_distance
+        nearest = nearest_points(self.geom.centroid, targets)
+        self.features[name] = helpers.get_distance(nearest)
 
     # @property
     def transit_distance(self):
@@ -178,16 +179,16 @@ class ObjectHandler(osmium.SimpleHandler):
         super().__init__()
         logging.basicConfig(level=level)
         self.cnfg = config
+        self.crs = crs
         self.filter = self.cnfg["filter"]
-        self.features_config = self.cnfg["features_config"]
+        self.object_features = self.cnfg["object_features"]
         self.default_activities = self.cnfg["default_activities"]
-        self.activity_config = self.cnfg["activity_config"]
+        self.activity_config = self.cnfg["activity_mapping"]
         self.transformer = Transformer.from_crs(CRS(from_crs), CRS(crs), always_xy=True)
 
         self.objects = helpers.AutoTree()
         self.points = helpers.AutoTree()
         self.areas = helpers.AutoTree()
-        self.transit_stops = []
 
         self.log = {
             "existing": 0,
@@ -202,7 +203,7 @@ class ObjectHandler(osmium.SimpleHandler):
     (ii) else, add them to self.areas or self.points if they are within the activity_mapping
     """
 
-    def selected(self, tags):
+    def selects(self, tags):
         if tags:
             tags = dict(tags)
             return helpers.dict_list_match(tags, self.filter)
@@ -215,8 +216,9 @@ class ObjectHandler(osmium.SimpleHandler):
             tags = dict(tags)
             found = []
             for osm_key, osm_val in tags.items():
-                if osm_key in self.activity_config and osm_val in self.activity_config[osm_key]:
-                    found.append(OSMTag(key=osm_key, value=osm_val))
+                if osm_key in self.activity_config:
+                    if osm_val in self.activity_config[osm_key] or osm_val == "*":
+                        found.append(OSMTag(key=osm_key, value=osm_val))
             return found
 
     def add_object(self, idx, activity_tags, osm_tags, geom):
@@ -251,14 +253,14 @@ class ObjectHandler(osmium.SimpleHandler):
 
     def node(self, n):
         activity_tags = self.get_activity_tags(n.tags)
-        if self.selected(n.tags):
+        if self.selects(n.tags):
             self.add_object(idx=n.id, osm_tags=n.tags, activity_tags=activity_tags, geom=self.fab_point(n))
         elif activity_tags:
             self.add_point(idx=n.id, activity_tags=activity_tags, geom=self.fab_point(n))
 
     def area(self, a):
         activity_tags = self.get_activity_tags(a.tags)
-        if self.selected(a.tags):
+        if self.selects(a.tags):
             self.add_object(idx=a.id, osm_tags=a.tags, activity_tags=activity_tags, geom=self.fab_area(a))
         elif activity_tags:
             self.add_area(idx=a.id, activity_tags=activity_tags, geom=self.fab_area(a))
@@ -296,41 +298,36 @@ class ObjectHandler(osmium.SimpleHandler):
         for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
             obj.assign_activities(self.activity_config)
 
-    def extract_transit_stops(self):
-        """
-        Find and store all transit stops 
-        """
-        self.transit_stops = []
-        for obj in self.points.objects:
-            for tag in obj.activity_tags:
-                activity = self.activity_config.get(tag.key,{}).get(tag.value,[])
-                if activity == ['transit_stop']:
-                    self.transit_stops.append(Point(obj.geom.x, obj.geom.y))
-        self.transit_stops = MultiPoint(self.transit_stops)
-
-    def add_transit_stop_distances(self):
-        """
-        For each facility, calculate euclidean distance to nearest transit stop
-        """
-        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
-            obj.add_transit_distance(self.transit_stops)
-
-    def assign_transit_stop_distances(self):
-        self.extract_transit_stops()
-        self.add_transit_stop_distances()
-
     def add_features(self):
         """
         ["units", "floors", "area", "floor_area"]
         """
         for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
-            obj.add_features(self.features_config)
-    
+            obj.add_features(self.object_features)
+
+    def assign_nearest_distance(self, target_act):
+        """
+        For each facility, calculate euclidean distance to targets of given activity type.
+        """
+        targets = self.extract_targets(target_act)
+        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+            obj.get_closest_distance(targets, target_act)
+
+    def extract_targets(self, target_act):
+        """
+        Find targets
+        """
+        targets = []
+        for obj in self.objects:
+            if target_act in obj.activities:
+                targets.append(obj.geom.centroid)
+        return MultiPoint(targets)
+
     def dataframe(self):
         df = pd.DataFrame(
             (b.summary() for b in self.objects)
         )
-        return gp.GeoDataFrame(df, geometry='geometry')
+        return gp.GeoDataFrame(df, geometry='geometry', crs=self.crs)
         
     # def extract(self):
     #     df = pd.DataFrame.from_records(

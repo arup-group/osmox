@@ -1,8 +1,10 @@
 import click
+import pathlib
 import os
 import json
 import logging
 
+from osmox.helpers import PathPath
 from osmox import config, build
 
 
@@ -26,7 +28,7 @@ def osmox():
 
 
 @osmox.command()    
-@click.argument("config_path", nargs=1, type=click.Path(exists=True), required=True)
+@click.argument("config_path", nargs=1, type=PathPath(exists=True), required=True)
 def validate(config_path):
     """
     Validate a config.
@@ -37,41 +39,58 @@ def validate(config_path):
 
 
 @osmox.command()
-@click.option("-c", "--config_path", type=click.Path(exists=True), default=default_config_path,
-              help="Path to config, eg './configs/default.csv'")
-@click.option("-i", "--input_path", type=click.Path(exists=False), default=default_input_path,
-              help="Path to input osm map, eg './example.osm.pbf'")
-@click.option("-o", "--output_path", type=click.Path(exists=False), default=default_output_path,
-              help="Putput path, eg './example.geojson'")
-def run(config_path, input_path, output_path):
+@click.argument('config_path', type=PathPath(exists=True), nargs=1, required=True)
+@click.argument('input_path', type=PathPath(exists=True), nargs=1, required=True)
+@click.argument('output_path', type=PathPath(exists=False), nargs=1, required=True)
+@click.option("-crs", "--crs", type=str, default="epsg:27700",
+              help="crs string eg (default): 'epsg:27700' (UK grid)")
+
+def run(config_path, input_path, output_path, crs):
 
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
-    handler = build.ObjectHandler(cnfg)
-    handler.apply_file(input_path, locations=True, idx='flex_mem')
+
+    if not os.path.exists(output_path):
+        logger.info(f'Creating output directory: {output_path}')
+        os.mkdir(output_path)
+
+    handler = build.ObjectHandler(cnfg, crs)
+    logger.info(f" Filtering all objects found in {input_path}.")
+    handler.apply_file(str(input_path), locations=True, idx='flex_mem')
     logger.info(f" Found {len(handler.objects)} buildings.")
     logger.info(f" Found {len(handler.points)} nodes with valid tags.")
     logger.info(f" Found {len(handler.areas)} areas with valid tags.")
 
-    logger.info(f" Assigning building tags.")
+    logger.info(f" Assigning object tags.")
     handler.assign_tags()
     logger.info(f" Finished assigning tags: f{handler.log}.")
 
-    logger.info(f" Assigning building activities.")
+    logger.info(f" Assigning object activities.")
     handler.assign_activities()
 
-    if 'transit_stop' in config.get_acts(cnfg):
-        logger.info(f" Assigning distances from nearest transit stop.")
-        handler.assign_transit_stop_distances()
-
-    if cnfg.get("features_config"):
-        logger.info(f" Assigning building features: {cnfg['features_config']}.")
+    if cnfg.get("object_features"):
+        logger.info(f" Assigning object features: {cnfg['object_features']}.")
         handler.add_features()
+
+    if 'distance_to_nearest' in cnfg:
+        for target_activity in cnfg["distance_to_nearest"]:
+            logger.info(f" Assigning distances to nearest {target_activity}.")
+            handler.assign_nearest_distance(target_activity)
 
     gdf = handler.dataframe()
 
-    logger.info(f" Outputting facility sample {output_path}")
-    with open(output_path, "w") as file:
+    path = output_path / f"{crs.replace(':', '_')}.geojson"
+    logger.info(f" Writting objects to: {path}")
+    with open(path, "w") as file:
         file.write(gdf.to_json())
+
+    if not crs == "epsg:4326":
+        logger.info(f" Reprojecting output to epsg:4326 (lat lon)")
+        gdf.to_crs("epsg:4326", inplace=True)
+        path = output_path / "epsg_4326.geojson"
+        logger.info(f" Writting objects to: {path}")
+        with open(path, "w") as file:
+            file.write(gdf.to_json())
+
     logger.info("Done.")
