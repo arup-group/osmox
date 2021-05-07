@@ -69,6 +69,18 @@ def run(config_path, input_path, output_path, crs):
     logger.info(f" Assigning object activities.")
     handler.assign_activities()
 
+    if cnfg.get("fill_missing_activities"):
+        for group in cnfg["fill_missing_activities"]:
+            logger.info(f" Filling missing activities: {group}.")
+            zones, objects = handler.fill_missing_activities(
+                area_tags=group["area_tags"],
+                required_acts=group["required_acts"],
+                new_tags=group["new_tags"],
+                size=group["size"],
+                spacing=group["spacing"]
+            )
+            logger.info(f" Filled {zones} zones with {objects} objects.") 
+
     if cnfg.get("object_features"):
         logger.info(f" Assigning object features: {cnfg['object_features']}.")
         handler.add_features()

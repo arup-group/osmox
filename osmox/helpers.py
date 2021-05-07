@@ -145,3 +145,11 @@ def get_distance(p):
         (p[0].y - p[1].y)**2
     ) ** 0.5
     return distance
+
+
+def tag_match(a, b):
+    for ka, va in a:
+        for kb, vb in b:
+            if ka == kb and va == vb:
+                return True
+    return False

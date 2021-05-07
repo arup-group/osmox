@@ -37,3 +37,28 @@ def validate_activity_config(config):
         unsupported = set(config.get("features_config")) - available
         if unsupported:
             logger.error(f"Unsupported features in config: {unsupported}, please choose from: {available}.")
+    
+    if "distance_to_nearest" in config:
+        acts = get_acts(config=config)
+        for act in config["distance_to_nearest"]:
+            if act not in acts:
+                logger.error(
+                    f"'Distance to nearest' has a non-configured activity '{act}'"
+                )
+    
+    if "fill_missing_activities" in config:
+        required_keys = {"area_tags", "required_acts", "new_tags", "size", "spacing"}
+        acts = get_acts(config=config)
+
+        for group in config["fill_missing_activities"]:
+            keys = list(group)
+            for k in required_keys:
+                if k not in keys:
+                    logger.error(
+                    f"'Fill missing activities' group is missing required key: {k}"
+                )
+            for act in group.get("required_acts", []):
+                if act not in acts:
+                    logger.error(
+                        f"'Fill missing activities' group has a non-configured activity '{act}'"
+                    )

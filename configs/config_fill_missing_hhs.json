@@ -44,6 +44,17 @@
 
 	"distance_to_nearest": ["transit", "education", "shop", "medical"],
 
+	"fill_missing_activities":
+		[
+			{
+				"area_tags": [["landuse", "residential"]],
+				"required_acts": ["home"],
+				"new_tags": [["building", "house"]],
+				"size": [10, 10],
+				"spacing": [25, 25]
+			}
+		],
+
 	"default_activities": [["building", "residential"]],
 
 	"activity_mapping": {
