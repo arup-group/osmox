@@ -11,6 +11,7 @@ def load(config_path):
     with open(config_path, "r") as read_file:
         return json.load(read_file)
 
+
 def get_acts(config):
     activity_config = config["activity_mapping"]    
     if activity_config:
@@ -21,11 +22,13 @@ def get_acts(config):
                     acts.add(act)
 
         return acts
+    return set([])
+
 
 def validate_activity_config(config):
 
-    activity_config = config["activity_mapping"]    
-    if activity_config:
+    activity_mapping = config["activity_mapping"]    
+    if activity_mapping:
         acts = get_acts(config)
         logger.warning(f"Configured activities: {sorted(acts)}")
 
