@@ -1,3 +1,4 @@
+import pytest
 import os
 from collections import defaultdict
 from shapely.geometry import Point, Polygon
@@ -92,3 +93,4 @@ def test_autotree_iter():
     )
     out = [o for o in tree]
     assert len(out) == 3
+

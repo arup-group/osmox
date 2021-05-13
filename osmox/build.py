@@ -8,7 +8,7 @@ import logging
 from collections import namedtuple
 from pyproj import Proj, Transformer, CRS
 from shapely.ops import transform, nearest_points
-from shapely.geometry import Point, MultiPoint
+from shapely.geometry import Point, Polygon, MultiPoint
 
 
 from osmox import config, helpers
@@ -32,6 +32,7 @@ class Object:
         "detached": 2,
         "dormitory": 4,
         "hotel": 3,
+        "house": 2,
         "residential": 2,
         "semidetached_house": 2,
         "terrace": 2,
@@ -153,8 +154,11 @@ class Object:
         Calculate euclidean distance to nearest target
         :params Multipoint targets: A Shapely Multipoint object of all targets
         """
-        nearest = nearest_points(self.geom.centroid, targets)
-        self.features[name] = helpers.get_distance(nearest)
+        if not targets:
+            self.features[f"distance_to_nearest_{name}"] = None
+        else:
+            nearest = nearest_points(self.geom.centroid, targets)
+            self.features[f"distance_to_nearest_{name}"] = helpers.get_distance(nearest)
 
     # @property
     def transit_distance(self):
@@ -182,7 +186,7 @@ class ObjectHandler(osmium.SimpleHandler):
         self.crs = crs
         self.filter = self.cnfg["filter"]
         self.object_features = self.cnfg["object_features"]
-        self.default_activities = self.cnfg["default_activities"]
+        self.default_tags = self.cnfg["default_tags"]
         self.activity_config = self.cnfg["activity_mapping"]
         self.transformer = Transformer.from_crs(CRS(from_crs), CRS(crs), always_xy=True)
 
@@ -208,7 +212,7 @@ class ObjectHandler(osmium.SimpleHandler):
             tags = dict(tags)
             return helpers.dict_list_match(tags, self.filter)
 
-    def get_activity_tags(self, tags):
+    def get_filtered_tags(self, tags):
         """
         Return configured activity tags for an OSM object as list of OSMtags.
         """
@@ -217,7 +221,7 @@ class ObjectHandler(osmium.SimpleHandler):
             found = []
             for osm_key, osm_val in tags.items():
                 if osm_key in self.activity_config:
-                    if osm_val in self.activity_config[osm_key] or osm_val == "*":
+                    if osm_val in self.activity_config[osm_key] or self.activity_config[osm_key] == "*":
                         found.append(OSMTag(key=osm_key, value=osm_val))
             return found
 
@@ -252,14 +256,15 @@ class ObjectHandler(osmium.SimpleHandler):
             return None
 
     def node(self, n):
-        activity_tags = self.get_activity_tags(n.tags)
+        activity_tags = self.get_filtered_tags(n.tags)
+        # todo consider renaming activiity tags to filtered or selected tags
         if self.selects(n.tags):
             self.add_object(idx=n.id, osm_tags=n.tags, activity_tags=activity_tags, geom=self.fab_point(n))
         elif activity_tags:
             self.add_point(idx=n.id, activity_tags=activity_tags, geom=self.fab_point(n))
 
     def area(self, a):
-        activity_tags = self.get_activity_tags(a.tags)
+        activity_tags = self.get_filtered_tags(a.tags)
         if self.selects(a.tags):
             self.add_object(idx=a.id, osm_tags=a.tags, activity_tags=activity_tags, geom=self.fab_area(a))
         elif activity_tags:
@@ -286,17 +291,74 @@ class ObjectHandler(osmium.SimpleHandler):
             if obj.assign_areas(self.areas):
                 # else try to assign activity tags based on containing area objects
                 self.log["areas"] += 1
-                continue    
+                continue
             
-            if self.default_activities:
+            if self.default_tags:
                 # otherwise apply defaults if set
                 self.log["defaults"] += 1
-                for a in self.default_activities:
+                for a in self.default_tags:
                     obj.apply_default_tag(a)
 
     def assign_activities(self):
         for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
             obj.assign_activities(self.activity_config)
+
+
+    def fill_missing_activities(
+        self,
+        area_tags=(("landuse", "residential")),
+        required_acts=("home"),
+        new_tags=(("building", "house")),
+        size=(10, 10), spacing=(25, 25)
+        ):
+        """
+        Fill "empty" areas with new objects. Empty areas are defined as areas with the select_tags but
+        not containing any objects of the required_acts.
+        An example of such missing objects would be missing home facilities in a residential area.
+        Empty areas are filled with new objects of given size at given spacing.
+
+        Args:
+            area_tags (tuple, optional): Defines (any) osm tags of areas to be considered. Defaults to (("landuse", "residential")).
+            required_acts (tuple, optional): Expected (any) object activity types to be found in areas. Defaults to ("home").
+            new_tags (tuple, optional): Tags for new objects. Defaults to (("building", "house")).
+            size (tuple, optional): x,y dimensions of new object polygon. Defaults to (10, 10).
+            spacing (tuple, optional): x,y dimensions of new objects spacing. Defaults to (25, 25).
+
+        Returns:
+            int, int: number of empty zones, number of new objects
+        """
+
+        empty_zones = 0  # conuter for fill zones
+        i = 0  # counter for object id
+        new_osm_tags = [OSMTag(key=k, value=v) for k, v in area_tags]
+        new_tags = [OSMTag(key=k, value=v) for k, v in new_tags]
+
+        for area in helpers.progressBar(self.areas, prefix = 'Progress:', suffix = 'Complete', length = 50):
+
+            if not helpers.tag_match(a=area_tags, b=area.activity_tags):
+                continue
+
+            if self.required_activities_in_target(required_acts, area.geom):
+                continue
+
+            empty_zones += 1  # increment another empty zone
+
+            # sample a grid
+            points = helpers.area_grid(area=area.geom, spacing=spacing)
+            for point in points:  # add objects built from grid
+                self.objects.auto_insert(helpers.fill_object(i, point, size, new_osm_tags, new_tags, required_acts))
+                i += 1
+
+        return empty_zones, i
+
+    def required_activities_in_target(self, required_activities, target):
+        found_activities = self.activities_from_area_intersection(target)
+        return set(required_activities) & found_activities  # in both
+
+    def activities_from_area_intersection(self, target):
+        objects = self.objects.intersection(target.bounds)
+        objects = [o for o in objects if target.contains(o.geom)]
+        return set([act for object in objects for act in object.activities])
 
     def add_features(self):
         """
@@ -335,3 +397,5 @@ class ObjectHandler(osmium.SimpleHandler):
     #         columns=['idx', 'tags', 'geom']
     #     )
     #     return gp.GeoDataFrame(df, geometry='geom')
+
+

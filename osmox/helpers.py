@@ -2,6 +2,8 @@ import logging
 import click
 from pathlib import Path
 from rtree import index
+from shapely.geometry import Polygon, Point
+from osmox import build
 
 logger = logging.getLogger(__name__)
 
@@ -145,3 +147,43 @@ def get_distance(p):
         (p[0].y - p[1].y)**2
     ) ** 0.5
     return distance
+
+
+def tag_match(a, b):
+    if not len(a):
+        return False
+    if not len(b):
+        return False
+    for ka, va in a:
+        for kb, vb in b:
+            if ka == kb and va == vb:
+                return True
+    return False
+
+
+def bounding_grid(area, spacing):
+    grid = []
+    min_x, min_y, max_x, max_y = area.bounds
+    nxs = 1 + int((max_x - min_x) / spacing[0])
+    nys = 1 + int((max_y - min_y) / spacing[1])
+    for ix in range(0, nxs):
+        x = min_x + (ix * spacing[0])
+        for iy in range(0, nys):
+            y = min_y + (iy * spacing[1])
+            grid.append((x, y))
+    return grid
+
+
+def area_grid(area, spacing):
+    grid = bounding_grid(area, spacing)
+    return [p for p in grid if area.intersects(Point(p))]
+
+
+def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
+    dx, dy = size[0], size[1]
+    x, y = point
+    geom = Polygon([(x, y), (x+dx, y), (x+dx, y+dy), (x, y+dy), (x, y)])
+    idx = f"fill_{i}"
+    object = build.Object(idx=idx, osm_tags=new_osm_tags, activity_tags=new_tags, geom=geom)
+    object.activities = list(required_acts)
+    return object
