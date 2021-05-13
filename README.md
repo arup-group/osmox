@@ -4,7 +4,7 @@ A tool for extracting locations and features from Open Street Map (OSM) data.
 
 ## Why?
 
-We use Osmox to extract locations from OSM for city or national scale agent based models. This tends to focus on extracting buildings and their likelly usages, for example `homes`, `schools`, `medical facilities` and `places of work`. But can also be abstracted to other objects such as parks or land use.
+We use Osmox to extract locations from OSM for city or national scale agent based models. This tends to focus on extracting buildings and their likelly usages, for example `homes`, `schools`, `medical facilities` and `places of work`. But can also be abstracted to other objects such as transit, parks or land use.
 
 Under the hood Osmox is a collection of labelling and GIS type operations:
 
@@ -14,7 +14,10 @@ Under the hood Osmox is a collection of labelling and GIS type operations:
 - feature extraction (such as floor areas)
 - filling missing data
 
- Assembled togther they form part of our wider pipeline. But as a stadalone tool, Osmox is useful for extracting insights from OSM in a hihly reproducible manner.
+ Assembled togther they form part of our wider pipeline. But as a standalone tool, Osmox is useful for extracting insights from OSM in a reproducible manner.
+
+ ![isle of man distance_to_nearest_transit](./readme_fixtures/distance-to-transit.png)
+*^ Isle of Man `distance_to_nearest_transit`.*
 
 ## Install
 
@@ -70,9 +73,6 @@ Outputs are written as WGS 84 (epsg:4326), so that they can be quickly inspected
 
 ![isle of man activites](./readme_fixtures/activities.png)
 *^ Isle of Man `activities` feature. For simulations we use this information to control what agents can do where, but this is also a good disagregate proxy for land-use. In this example, blue areas are residential, orange commercial and brown is other work places.*
-
-![isle of man distance_to_nearest_transit](./readme_fixtures/distance-to-transit.png)
-*^ Isle of Man `distance_to_nearest_transit`. See that other distances are available, such as distance to nearest education.*
 
 ## Osmox Run
 
@@ -351,6 +351,9 @@ Multiple groups can also be defined, for example:
 ## TODO
 
 - move to toml/yaml configs
+- add zonal labelling (eg lsoa assignment)
+- add option for single activity only locations (ie splitting multi-use buildings)
+- perhaps add a sampling format (zone:act:{viables})
 - todo add support to keep original geometries
 - add .shp option
 - add other distance or similar type features, eg count of nearest neighbours
