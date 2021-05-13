@@ -13,7 +13,7 @@ def load(config_path):
 
 
 def get_acts(config):
-    activity_config = config["activity_mapping"]    
+    activity_config = config.get("activity_mapping")
     if activity_config:
         acts = set()
         for _tag_key, t_dict in activity_config.items():
@@ -25,9 +25,31 @@ def get_acts(config):
     return set([])
 
 
+def get_tags(config):
+    filter_config = config.get("filter")
+    if filter_config:
+        keys = set()
+        tags = set()
+        for tag_key, tag_values in filter_config.items():
+            keys.add(tag_key)
+            for tag_value in tag_values:
+                tags.add((tag_key, tag_value))
+
+        return keys, tags
+    return set([]), set([])
+
+
 def validate_activity_config(config):
 
-    activity_mapping = config["activity_mapping"]    
+    filter_config = config.get("filter")
+    if not filter_config:
+        logger.error(f"No 'filter' found in config.")
+
+    else:
+        keys, tags = get_tags(config)
+        logger.warning(f"Configured OSM tag keys: {sorted(keys)}")
+
+    activity_mapping = config.get("activity_mapping")
     if activity_mapping:
         acts = get_acts(config)
         logger.warning(f"Configured activities: {sorted(acts)}")
@@ -35,9 +57,9 @@ def validate_activity_config(config):
     else:
         logger.error(f"No 'activity_config' found in config.")
 
-    if config.get("features_config"):
+    if config.get("object_features"):
         available = set(build.AVAILABLE_FEATURES)
-        unsupported = set(config.get("features_config")) - available
+        unsupported = set(config.get("object_features")) - available
         if unsupported:
             logger.error(f"Unsupported features in config: {unsupported}, please choose from: {available}.")
     

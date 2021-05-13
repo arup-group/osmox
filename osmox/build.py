@@ -154,8 +154,11 @@ class Object:
         Calculate euclidean distance to nearest target
         :params Multipoint targets: A Shapely Multipoint object of all targets
         """
-        nearest = nearest_points(self.geom.centroid, targets)
-        self.features[f"distance_to_nearest_{name}"] = helpers.get_distance(nearest)
+        if not targets:
+            self.features[f"distance_to_nearest_{name}"] = None
+        else:
+            nearest = nearest_points(self.geom.centroid, targets)
+            self.features[f"distance_to_nearest_{name}"] = helpers.get_distance(nearest)
 
     # @property
     def transit_distance(self):
@@ -183,7 +186,7 @@ class ObjectHandler(osmium.SimpleHandler):
         self.crs = crs
         self.filter = self.cnfg["filter"]
         self.object_features = self.cnfg["object_features"]
-        self.default_activities = self.cnfg["default_activities"]
+        self.default_tags = self.cnfg["default_tags"]
         self.activity_config = self.cnfg["activity_mapping"]
         self.transformer = Transformer.from_crs(CRS(from_crs), CRS(crs), always_xy=True)
 
@@ -290,10 +293,10 @@ class ObjectHandler(osmium.SimpleHandler):
                 self.log["areas"] += 1
                 continue
             
-            if self.default_activities:
+            if self.default_tags:
                 # otherwise apply defaults if set
                 self.log["defaults"] += 1
-                for a in self.default_activities:
+                for a in self.default_tags:
                     obj.apply_default_tag(a)
 
     def assign_activities(self):
@@ -335,32 +338,27 @@ class ObjectHandler(osmium.SimpleHandler):
             if not helpers.tag_match(a=area_tags, b=area.activity_tags):
                 continue
 
-            found_activities = set([act for acts in self.objects.intersection(area.geom) for act in acts])
-            if set(required_acts) & found_activities:  # check if any in both
+            if self.required_activities_in_target(required_acts, area.geom):
                 continue
 
             empty_zones += 1  # increment another empty zone
 
             # sample a grid
-            min_x, min_y, max_x, max_y = area.geom.bounds
-            nxs = int((max_x - min_x) / spacing[0])
-            nys = int((max_y - min_y) / spacing[1])
-            for ix in range(0, nxs+1):
-                x = min_x + (ix * spacing[0])
-                for iy in range(0, nys):
-                    y = min_y + (iy * spacing[1])
-                    p = Point((x, y))
-                    if area.geom.contains(p):
-                        dx, dy = size[0], size[1]
-                        geom = Polygon([(x, y), (x+dx, y), (x+dx, y+dy), (x, y+dy), (x, y)])
-                        idx = f"fill_{i}"
-                        i += 1  # increment unique id counter
-                        object = Object(idx=idx, osm_tags=new_osm_tags, activity_tags=new_tags, geom=geom)
-                        object.activities = list(required_acts)
-                        self.objects.auto_insert(object)
-        
+            points = helpers.area_grid(area=area.geom, spacing=spacing)
+            for point in points:  # add objects built from grid
+                self.objects.auto_insert(helpers.fill_object(i, point, size, new_osm_tags, new_tags, required_acts))
+                i += 1
+
         return empty_zones, i
 
+    def required_activities_in_target(self, required_activities, target):
+        found_activities = self.activities_from_area_intersection(target)
+        return set(required_activities) & found_activities  # in both
+
+    def activities_from_area_intersection(self, target):
+        objects = self.objects.intersection(target.bounds)
+        objects = [o for o in objects if target.contains(o.geom)]
+        return set([act for object in objects for act in object.activities])
 
     def add_features(self):
         """
@@ -399,3 +397,5 @@ class ObjectHandler(osmium.SimpleHandler):
     #         columns=['idx', 'tags', 'geom']
     #     )
     #     return gp.GeoDataFrame(df, geometry='geom')
+
+

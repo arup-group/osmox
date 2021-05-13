@@ -24,7 +24,7 @@ def test_innit(test_config):
 
 @pytest.fixture()
 def testHandler(test_config):
-    return build.ObjectHandler(test_config)
+    return build.ObjectHandler(test_config, crs='epsg:4326')
 
 
 def test_object_assign_points():
@@ -115,3 +115,150 @@ def test_load_toy(testHandler):
     assert len(handler.objects) == 5
     assert len(handler.points) == 6
     assert len(handler.areas) == 2
+
+
+def test_activities_from_area_intersection(testHandler):
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])
+        )
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((1, 1))
+        )
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((100, 100))
+        )
+    for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
+        o.activities = acts
+
+    acts = testHandler.activities_from_area_intersection(Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)]))
+    assert acts == set(["a", "b", "c"])
+
+
+def test_required_activities_in_target(testHandler):
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])
+        )
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((1, 1))
+        )
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((100, 100))
+        )
+    for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
+        o.activities = acts
+
+    assert testHandler.required_activities_in_target(
+        required_activities=["a"],
+        target=Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)])
+        )
+    
+    assert testHandler.required_activities_in_target(
+        required_activities=["b", "d"],
+        target=Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)])
+        )
+    
+    assert not testHandler.required_activities_in_target(
+        required_activities=["d"],
+        target=Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)])
+        )
+
+
+def test_fill_missing_activities_single_building(testHandler):
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])
+        )
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((1, 1))
+        )
+    testHandler.add_object(  # not in area
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((110, 110))
+        )
+    testHandler.add_area(
+        idx=0,
+        activity_tags=[["landuse","residential"]],
+        geom=Polygon([(0, 0), (0, 100), (100, 100), (100, 0), (0, 0)]) 
+    )
+    for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
+        o.activities = acts
+
+    testHandler.fill_missing_activities(
+        area_tags=[("landuse", "residential")],
+        required_acts=["d"],
+        new_tags=[("building", "house")],
+        size=(10, 10), spacing=(101, 101)
+        )
+    
+    objects = [o for o in testHandler.objects]
+    house = objects[-1]
+    assert house.idx == "fill_0"
+    assert house.geom.equals(Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]))
+
+
+def test_fill_missing_activities_multiple_buildings(testHandler):
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])
+        )
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((1, 1))
+        )
+    testHandler.add_object(  # not in area
+        idx=0,
+        activity_tags=[["test_tag","test_value"]],
+        osm_tags=[["test","test"]],
+        geom=Point((110, 110))
+        )
+    testHandler.add_area(
+        idx=0,
+        activity_tags=[["landuse","residential"]],
+        geom=Polygon([(0, 0), (0, 100), (100, 100), (100, 0), (0, 0)]) 
+    )
+    for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
+        o.activities = acts
+
+    testHandler.fill_missing_activities(
+        area_tags=[("landuse", "residential")],
+        required_acts=["d"],
+        new_tags=[("building", "house")],
+        size=(10, 10), spacing=(100, 100)
+        )
+    
+    objects = [o for o in testHandler.objects]
+    house = objects[-4]
+    assert house.idx == "fill_0"
+    assert house.geom.equals(Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]))
+    house = objects[-1]
+    assert house.idx == "fill_3"
+    assert house.geom.equals(Polygon([(100.0, 100.0), (110.0, 100.0), (110.0, 110.0), (100.0, 110.0), (100.0, 100.0)]))
