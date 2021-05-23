@@ -350,9 +350,9 @@ Multiple groups can also be defined, for example:
 
 ## TODO
 
-- move to toml/yaml configs
+- this is slow for sure - for national scale extractions we're talking many hours. There are some areas that can be sped up, some that will paralellize ok. But treating all this as premature until an output format is nailed down and there are a few more users
+- move to toml/yaml configs (but maybe not the json is ok)
 - add zonal labelling (eg lsoa assignment)
-- add option for single activity only locations (ie splitting multi-use buildings)
 - perhaps add a sampling format (zone:act:{viables})
 - todo add support to keep original geometries
 - add .shp option
