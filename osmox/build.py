@@ -218,7 +218,7 @@ class ObjectHandler(osmium.SimpleHandler):
 
     """
     On handler.apply_file() method; parse through all nodes and areas:
-    (i) add them to self.found if they are within the filter_config
+    (i) add them to self.objects if they are within the filter_config
     (ii) else, add them to self.areas or self.points if they are within the activity_mapping
     """
 
