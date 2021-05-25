@@ -3,4 +3,4 @@ branch = True
 omit = venv/*, tests/*, notebooks/*, scripts/*
 
 [report]
-fail_under = 50
+fail_under = 60

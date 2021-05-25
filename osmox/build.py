@@ -165,12 +165,27 @@ class Object:
         return self._transit_distance
 
     def summary(self):
+        """
+        Returbn a dict summary.
+        """
         fixed = {
             "id": self.idx,
             "activities": ','.join(self.activities),
             "geometry": self.geom.centroid
         }
         return {**fixed, **self.features}
+
+    def single_activity_summaries(self):
+        """
+        Yield (dict) summaries for each each activity of an object.
+        """
+        for act in self.activities:
+            fixed = {
+                "id": self.idx,
+                "activity": act,
+                "geometry": self.geom.centroid
+            }
+            yield {**fixed, **self.features}
 
 
 class ObjectHandler(osmium.SimpleHandler):
@@ -226,8 +241,9 @@ class ObjectHandler(osmium.SimpleHandler):
             return found
 
     def add_object(self, idx, activity_tags, osm_tags, geom):
-        geom = transform(self.transformer.transform, geom)
-        self.objects.auto_insert(Object(idx=idx, osm_tags=osm_tags, activity_tags=activity_tags, geom=geom))
+        if geom:
+            geom = transform(self.transformer.transform, geom)
+            self.objects.auto_insert(Object(idx=idx, osm_tags=osm_tags, activity_tags=activity_tags, geom=geom))
 
     def add_point(self, idx, activity_tags, geom):
         if geom:
@@ -385,17 +401,22 @@ class ObjectHandler(osmium.SimpleHandler):
                 targets.append(obj.geom.centroid)
         return MultiPoint(targets)
 
-    def dataframe(self):
+    def geodataframe(self, single_use=False):
+        if single_use:
+
+            df = pd.DataFrame(
+                (summary for o in self.objects for summary in o.single_activity_summaries())
+            )
+            return gp.GeoDataFrame(df, geometry='geometry', crs=self.crs)
+
         df = pd.DataFrame(
-            (b.summary() for b in self.objects)
+            (o.summary() for o in self.objects)
         )
         return gp.GeoDataFrame(df, geometry='geometry', crs=self.crs)
-        
+
     # def extract(self):
     #     df = pd.DataFrame.from_records(
     #         ((b.idx, b.geom.centroid) for b in self.objects),
     #         columns=['idx', 'tags', 'geom']
     #     )
     #     return gp.GeoDataFrame(df, geometry='geom')
-
-

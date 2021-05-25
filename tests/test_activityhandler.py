@@ -262,3 +262,43 @@ def test_fill_missing_activities_multiple_buildings(testHandler):
     house = objects[-1]
     assert house.idx == "fill_3"
     assert house.geom.equals(Polygon([(100.0, 100.0), (110.0, 100.0), (110.0, 110.0), (100.0, 110.0), (100.0, 100.0)]))
+
+
+def test_extract_multiuse_object_geodataframe(testHandler):
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[['a', 'b']],
+        osm_tags=[['a', 'b']],
+        geom=Polygon([(-5, -5), (-5, 5), (5, 5), (5, -5), (-5, -5)])
+    )
+    testHandler.objects.objects[0].activities = ["a","b"]
+    testHandler.objects.objects[0].features = {"feature":0}
+
+    gdf = testHandler.geodataframe()
+    assert len(gdf) == 1
+    obj = gdf.iloc[0].to_dict()
+    assert obj['activities'] == "a,b"
+    assert obj["geometry"] == Point(0,0)
+    assert obj["id"] == 0
+    assert obj["feature"] == 0
+
+
+def test_extract_single_use_object_geodataframe(testHandler):
+    testHandler.add_object(
+        idx=0,
+        activity_tags=[['a', 'b']],
+        osm_tags=[['a', 'b']],
+        geom=Polygon([(-5, -5), (-5, 5), (5, 5), (5, -5), (-5, -5)])
+    )
+    testHandler.objects.objects[0].activities = ["a","b"]
+    testHandler.objects.objects[0].features = {"feature":0}
+
+    gdf = testHandler.geodataframe(single_use=True)
+    assert len(gdf) == 2
+    gdf.iloc[0].to_dict()["activity"] == "a"
+    gdf.iloc[1].to_dict()["activity"] == "b"
+    for i in range(2):
+        obj = gdf.iloc[i].to_dict()
+        assert obj["geometry"] == Point(0,0)
+        assert obj["id"] == 0
+        assert obj["feature"] == 0

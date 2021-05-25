@@ -44,8 +44,10 @@ def validate(config_path):
 @click.argument('output_path', type=PathPath(exists=False), nargs=1, required=True)
 @click.option("-crs", "--crs", type=str, default="epsg:27700",
               help="crs string eg (default): 'epsg:27700' (UK grid)")
+@click.option("-s", "--single_use", is_flag=True,
+            help="split multi-activity facilities into multiple single-activity facilities")
 
-def run(config_path, input_path, output_path, crs):
+def run(config_path, input_path, output_path, crs, single_use):
 
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
@@ -90,7 +92,7 @@ def run(config_path, input_path, output_path, crs):
             logger.info(f" Assigning distances to nearest {target_activity}.")
             handler.assign_nearest_distance(target_activity)
 
-    gdf = handler.dataframe()
+    gdf = handler.geodataframe(single_use=single_use)
 
     path = output_path / f"{crs.replace(':', '_')}.geojson"
     logger.info(f" Writting objects to: {path}")
