@@ -4,7 +4,7 @@ A tool for extracting locations and features from Open Street Map (OSM) data.
 
 ## Why?
 
-We use Osmox to extract locations from OSM for city or national scale agent based models. This tends to focus on extracting buildings and their likelly usages, for example `homes`, `schools`, `medical facilities` and `places of work`. But can also be abstracted to other objects such as transit, parks or land use.
+We use Osmox to extract locations from OSM for city or national scale agent based models. This tends to focus on extracting buildings and their usages, for example `homes`, `schools`, `medical facilities` and `places of work`. But can also be abstracted to other objects such as transit, parks or land use.
 
 Under the hood Osmox is a collection of labelling and GIS type operations:
 
@@ -36,7 +36,7 @@ Extract `home`, `work`, `education`, `shop` and various other activity locations
 
 `osmox run configs/example.json example_data/isle-of-man.osm example -crs "epsg:27700"` (paths given from osmox project root)
 
-After about 30 seconds you should find locations for the extract facilities in the specified `example` directory. Each facility includes a number of facilities as per the config:
+After about 30 seconds you should find locations for the extracted facilities in the specified `example` directory. Each facility includes a number of features:
 
 ```{geojson}
 {
@@ -81,15 +81,19 @@ Outputs are written as WGS 84 (epsg:4326), so that they can be quickly inspected
 ```{sh}
 osmox run --help
 
-Usage: osmox run [OPTIONS] CONFIG_PATH INPUT_PATH OUTPUT_PATH
-
 Options:
   -crs, --crs TEXT  crs string eg (default): 'epsg:27700' (UK grid)
+  -s, --single_use  split multi-activity facilities into multiple single-activity facilities
   --help            Show this message and exit.
-
 ```
 
 We describe configs below. The `<INPUT_PATH>` should point to an OSM map dataset (`osm`(xml) and `osm.pbf` are supported). The `<OUTPUT_PATH>` should point to an exiting or new output directory.
+
+## Options
+
+The most common option you will need to use is `crs`. The default crs is UK grid (epsg:27700), so if you are working outside the UK you should adjust this accordingly. Specifying a relevant grid crs for your data is important if you would like to extract sensible units of measurement for distances and areas. If this isn't a concern, you can specify crs as wgs84 (`-crs epsg:4326`).
+
+Osmox will return multi-use objects where applicable. For example a building that contains both a restaurant and a shop can be labelled with `activities: "eating,shopping"`. This can make simple mapping of outputs quite complex, as there are many possible combinations of combined use. To work around this problem, the optionional flag `-s` or `--single_use` may be set to instead output unique objects for each activity. For example, for the above example, extracting two identical buildings, one with `activity: "eating"` and the other with `activity: "shopping"`.
 
 ## Configs
 
