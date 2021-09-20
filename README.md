@@ -1,12 +1,12 @@
 # OSM Ox
 
-A tool for extracting locations and features from Open Street Map (OSM) data.
+A tool for extracting locations and features from OpenStreetMap (OSM) data.
 
 ## Why?
 
-We use Osmox to extract locations from OSM for city or national scale agent based models. This tends to focus on extracting buildings and their usages, for example `homes`, `schools`, `medical facilities` and `places of work`. But can also be abstracted to other objects such as transit, parks or land use.
+We use OSMOX to extract locations from OSM for city or national scale agent based models. In particulae, the focus tends to be on extracting buildings and their designated usages, for example `homes`, `schools`, `medical facilities` and `places of work`. However, this can also be abstracted to other objects such as transit, parks or land use.
 
-Under the hood Osmox is a collection of labelling and GIS type operations:
+Under the hood, OSMOX is a collection of labelling and GIS-type operations:
 
 - filtering
 - activity labelling
@@ -14,7 +14,7 @@ Under the hood Osmox is a collection of labelling and GIS type operations:
 - feature extraction (such as floor areas)
 - filling missing data
 
- Assembled togther they form part of our wider pipeline. But as a standalone tool, Osmox is useful for extracting insights from OSM in a reproducible manner.
+ Assembled together, they form part of our wider pipeline. But as a standalone tool, OSMOX is useful for extracting insights from OSM in a reproducible manner.
 
  ![isle of man distance_to_nearest_transit](./readme_fixtures/distance-to-transit.png)
 *^ Isle of Man `distance_to_nearest_transit`.*
@@ -34,9 +34,9 @@ osmox --help
 
 Extract `home`, `work`, `education`, `shop` and various other activity locations ("facilities") for the Isle of Man:
 
-`osmox run configs/example.json example_data/isle-of-man.osm example -crs "epsg:27700"` (paths given from osmox project root)
+`osmox run configs/example.json example_data/isle-of-man.osm example -crs "epsg:27700"` (paths given from OSMOX project root)
 
-After about 30 seconds you should find locations for the extracted facilities in the specified `example` directory. Each facility includes a number of features:
+After about 30 seconds, you should find locations for the extracted facilities in the specified `example` directory. Each facility includes a number of features:
 
 ```{geojson}
 {
@@ -66,7 +66,7 @@ After about 30 seconds you should find locations for the extracted facilities in
         ...
 ```
 
-Outputs are written as WGS 84 (epsg:4326), so that they can be quickly inspected via [kepler](https://kepler.gl) or equivalent:
+Outputs are written in geojson format as features with WGS-84 (EPSG:4326) CRS, so that they can be quickly inspected via [kepler](https://kepler.gl) or equivalent:
 
 ![isle of man floor areas](./readme_fixtures/floor-areas.png)
 *^ Isle of Man facility `floor_area` feature. Approximated based on polygon areas and floor labels or sensible defaults.*
@@ -74,7 +74,7 @@ Outputs are written as WGS 84 (epsg:4326), so that they can be quickly inspected
 ![isle of man activites](./readme_fixtures/activities.png)
 *^ Isle of Man `activities` feature. For simulations we use this information to control what agents can do where, but this is also a good disagregate proxy for land-use. In this example, blue areas are residential, orange commercial and brown is other work places.*
 
-## Osmox Run
+## OSMOX Run
 
 `osmox run <CONFIG_PATH> <INPUT_PATH> <OUTPUT_PATH>` is the main entry point for OSMOX:
 
@@ -87,23 +87,23 @@ Options:
   --help            Show this message and exit.
 ```
 
-We describe configs below. The `<INPUT_PATH>` should point to an OSM map dataset (`osm`(xml) and `osm.pbf` are supported). The `<OUTPUT_PATH>` should point to an exiting or new output directory.
+Configs are described below. The `<INPUT_PATH>` should point to an OSM map dataset (`osm`(xml) and `osm.pbf` are supported). The `<OUTPUT_PATH>` should point to an exiting or new output directory.
 
 ## Options
 
-The most common option you will need to use is `crs`. The default crs is UK grid (epsg:27700), so if you are working outside the UK you should adjust this accordingly. Specifying a relevant grid crs for your data is important if you would like to extract sensible units of measurement for distances and areas. If this isn't a concern, you can specify crs as wgs84 (`-crs epsg:4326`).
+The most common option you will need to use is `crs`. The default CRS is British National Grid (BNG, or EPSG:27700), so if you are working outside the UK you should adjust this accordingly. Specifying a relevant CRS for your data is important if you would like to extract sensible units of measurement for distances and areas. If this isn't a concern, you can specify CRS as WGS-84 (`-crs epsg:4326`).
 
-Osmox will return multi-use objects where applicable. For example a building that contains both a restaurant and a shop can be labelled with `activities: "eating,shopping"`. This can make simple mapping of outputs quite complex, as there are many possible combinations of combined use. To work around this problem, the optionional flag `-s` or `--single_use` may be set to instead output unique objects for each activity. For example, for the above example, extracting two identical buildings, one with `activity: "eating"` and the other with `activity: "shopping"`.
+OSMOX will return multi-use objects where applicable. For example, a building that contains both a restaurant and a shop can be labelled with `activities: "eating,shopping"`. This can make simple mapping of outputs quite complex, as there are many possible versions of combined use. To work around this problem, the optionional flag `-s` or `--single_use` may be set to instead output unique objects for each activity. For example, for the above case, extracting two identical buildings, one with `activity: "eating"` and the other with `activity: "shopping"`.
 
 ## Configs
 
-Configs are important. So we provide some examples in `mc/configs` and a validation method for when you start editing or building your own configs:
+Configs are importan, so we provide some examples in `mc/configs` and a validation method for when you start editing or building your own configs:
 
 ```{sh}
 osmox validate <CONFIG PATH>
 ```
 
-OSMOX features and associated configurations are described in the various sections below.
+OSMOX features and associated configurations are described in the sections below.
 
 ## Output
 
@@ -137,9 +137,11 @@ INFO:osmox.main: Writting objects to: suffolk2/epsg_4326.geojson
 INFO:osmox.main:Done.
 ```
 
-Once complete you will find osmox has created one or two output `.geojson` in the specified `<OUTPUT_PATH>`. If you have specified a crs, you will find your outputs as both this crs and as epsg4326.
+Once complete, you will find OSMOX has created one or two outputs in the format of `.geojson` in the specified `<OUTPUT_PATH>`. If you have specified a CRS, you will find your outputs with two types of CRS:
+1) the CRS you specified
+2) EPSG:4326
 
-We generally refer to the outputs collectively as `facilities` and the properties as `features`. Note that each facility has a unique id, a bunch of features (depending on the configuration) and a point geometry. In the case of areas or polygons, such as buildings, the point represents the centroid.
+We generally refer to the outputs collectively as `facilities` and the properties as `features`. Note that each facility has a unique id, a number of features (depending on the configuration) and a point geometry. In the case of areas or polygons, such as buildings, the point represents the centroid.
 
 ```{geojson}
 {
@@ -164,7 +166,7 @@ We generally refer to the outputs collectively as `facilities` and the propertie
 }
 ```
 
-In the quick start demo, we specified the coordinate reference system as `epsg:27700` (this is the default, but we specified it for visibility) so that distance and area based features would have sensible units (metres in this case). If extracting data from other areas we would encourage using the relevant grid crs for that area.
+In the quick start demo, we specified the coordinate reference system as `epsg:27700` (this is the default, but we specified it for visibility) so that distance- and area-based features would have sensible units (metres in this case). If extracting data from other regions, we would encourage using the local CRS.
 
 ## Configuration
 
@@ -175,7 +177,7 @@ In the quick start demo, we specified the coordinate reference system as `epsg:2
 
 ### Primary Functionality
 
-The primary use case for osmox is for extracting a representation of places where people can do various activities ('education' or 'work' or 'shop' for example). This is done applying a configured mapping to OSM tags:
+The primary use case for OSMOX is for extracting a representation of places where people can do various activities ('education' or 'work' or 'shop' for example). This is done by applying a configured mapping to OSM tags:
 
 - **Filter** OSM objects based on OSM tags (eg: select 'building:yes' objects). Filtered objects are defined in a `config.json`. For example, if we were interested in extracting education type `buildings`:
 
@@ -221,20 +223,20 @@ Because an OSM tag key is often sufficient to make an activity mapping, we allow
 }
 ```
 
-Note that the filter controls the final objects that get extracted but that the activity mapping is more general. It is typical to map tags that are not included in the filter because these can be used by subsequent steps (such as inference) to assign activities where otherwise useful tags aren't included. There is no harm in over specifying the mapping.
+Note that the filter controls the final objects that get extracted but that the activity mapping is more general. It is typical to map tags that are not included in the filter because these can be used by subsequent steps (such as inference) to assign activities where otherwise useful tags aren't included. There is no harm in over-specifying the mapping.
 
-These configs get looong - but we've supplied some full examples in the project.
+These configs get very long - but we've supplied some full examples in the project.
 
 ### Spatial Inference
 
-Because OSMObjects do not always contain useful tags, we also infer object tags based on spatial operations with surrounding tags.
+Because OSM objects do not always contain useful tags, we also infer object tags based on spatial operations with surrounding tags.
 
 The most common use case for this is building objects that are simply tagged as `building:yes`. We use the below logic to infer useful tags, such as 'building:shop' or 'building:residential'.
 
-- **Contains.** - If an OSMObject has no mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
-- **Within.** - Where an OSM object *still* does not have a useful OSM tag - tags are assigned based on the tags of objects that contain the object. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `landuse:residential`.
+- **Contains.** - If an OSM objects has no mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
+- **Within.** - Where an OSM object *still* does not have a useful OSM tag - tags are assigned based on the tags of objects that contain the object. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `building:residential`.
 
-In both cases we need to add the OSMTags we plan to use to the `activity_mapping` config, eg:
+In both cases we need to add the OSM tags we plan to use to the `activity_mapping` config, for example:
 
 ```{json}
 {
@@ -254,7 +256,7 @@ In both cases we need to add the OSMTags we plan to use to the `activity_mapping
 }
 ```
 
-- **Default.** - Where an OSMObject *still* does not have a useful OSM tag, we can optionally apply defaults. Again, these are set in the config:
+- **Default.** - Where an OSM object *still* does not have a useful OSM tag, we can optionally apply defaults. Again, these are set in the config:
 
 ```{json}
 {
@@ -285,7 +287,7 @@ These can be configured as follows:
 
 ### Distance to Nearest Extraction
 
-OSMOX also supports calculating distance to nearest features based on object activities. For example we can extract nearest distance to `transit`, `education`, `shop` and `medical` by adding the following to the config:
+OSMOX also supports calculating distance to nearest features based on object activities. For example, we can extract nearest distance to `transit`, `education`, `shop` and `medical` by adding the following to the config:
 
 ```{json}
 {
@@ -295,15 +297,15 @@ OSMOX also supports calculating distance to nearest features based on object act
 }
 ```
 
-Note that the selected activities are based on the activity mapping config. Any activities should therefore be included in the activity mapping part of the config. You can use `osmox validate <CONFIG PATH>` to check if a config is correctly configured.
+Note that the selected activities are based on the activity mapping config. Any activities should therefore be included in the activity mapping part of the config. You can use `osmox validate <CONFIG PATH>` to check if a config is correctly specified.
 
 ### Fill Missing Activities
 
 We have noted that it is not uncommon for some small areas to not have building objects, but to have an appropriate landuse area tagged as 'residential'.
 
-We therefore provide a very ad-hoc solution for filling such areas with a grid of objects. This fill method only fills areas that do not have the required activities already within them.
+We therefore provide a very ad-hoc solution for filling in such areas with a grid of objects. This fill-in method only fills in areas that do not have the required activities already within them.
 
-For example, given an area tagged as `landuse:residential` by OSM, that does not contain any object of activity type `home`, the fill method will add a grid of new objects tagged `building:house`. The new objects will also have activity type `home`, size `10 by 10` and be spaced at `25 by 25`:
+For example, given an area tagged as `landuse:residential` by OSM that does not contain any object of activity type `home`, the fill in method will add a grid of new objects tagged `building:house`. The new objects will also have activity type `home`, size `10 by 10` and be spaced at `25 by 25`:
 
 ```{json}
 {
@@ -324,7 +326,7 @@ For example, given an area tagged as `landuse:residential` by OSM, that does not
 ![isle of man distance_to_nearest_transit](./readme_fixtures/activity-fill.png)
 *^ Example Isle of Man activity filling in action for a residential area without building locations.*
 
-Note that the selected activities are based on the activity mapping config. Any activities should therefore be included in the activity mapping part of the config. You can use `osmox validate <CONFIG PATH>` to check if a config is correctly configured.
+Note that the selected activities are based on the activity mapping config. Any activities should therefore be included in the activity mapping part of the config. You can use `osmox validate <CONFIG PATH>` to check if a config is correctly specified.
 
 Multiple groups can also be defined, for example:
 
