@@ -173,13 +173,13 @@ In the quick start demo, we specified the coordinate reference system as `epsg:2
 ### Definitions
 
 **OSMObjects** - objects extracted from OSM. These can be points, lines or polygons. Objects have features.
-**OSMFeatures** - OSM objects have features. Features typically include a key and value based on the [OSM wiki](https://wiki.openstreetmap.org/wiki/Map_features).
+**OSMFeatures** - OSMObjects have features. Features typically include a key and value based on the [OSM wiki](https://wiki.openstreetmap.org/wiki/Map_features).
 
 ### Primary Functionality
 
 The primary use case for OSMOX is for extracting a representation of places where people can do various activities ('education' or 'work' or 'shop' for example). This is done by applying a configured mapping to OSM tags:
 
-- **Filter** OSM objects based on OSM tags (eg: select 'building:yes' objects). Filtered objects are defined in a `config.json`. For example, if we were interested in extracting education type `buildings`:
+- **Filter** OSMObjects based on OSM tags (eg: select 'building:yes' objects). Filtered objects are defined in a `config.json`. For example, if we were interested in extracting education type `buildings`:
 
 ```{json}
 {
@@ -229,11 +229,11 @@ These configs get very long - but we've supplied some full examples in the proje
 
 ### Spatial Inference
 
-Because OSM objects do not always contain useful tags, we also infer object tags based on spatial operations with surrounding tags.
+Because OSMObjects do not always contain useful tags, we also infer object tags based on spatial operations with surrounding tags.
 
 The most common use case for this is building objects that are simply tagged as `building:yes`. We use the below logic to infer useful tags, such as 'building:shop' or 'building:residential'.
 
-- **Contains.** - If an OSM objects has no mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
+- **Contains.** - If an OSMObject has no mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
 - **Within.** - Where an OSM object *still* does not have a useful OSM tag - tags are assigned based on the tags of objects that contain the object. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `building:residential`.
 
 In both cases we need to add the OSM tags we plan to use to the `activity_mapping` config, for example:
