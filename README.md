@@ -1,10 +1,10 @@
-# OSMOX
+﻿# OSMOX
 
 A tool for extracting locations and features from OpenStreetMap (OSM) data.
 
 ## Why?
 
-We use OSMOX to extract locations from OSM for city or national scale agent based models. In particular, the focus tends to be on extracting buildings and their designated usages, for example `homes`, `schools`, `medical facilities` and `places of work`. However, this can also be abstracted to other objects such as transit, parks or land use.
+We use OSMOX to extract locations from OSM for city or national scale agent-based models. In particular, the focus tends to be on extracting buildings and their designated usages, for example `homes`, `schools`, `medical facilities` and `places of work`. However, this can also be abstracted to other objects such as transit, parks or land use.
 
 Under the hood, OSMOX is a collection of labelling and GIS-type operations:
 
@@ -14,7 +14,7 @@ Under the hood, OSMOX is a collection of labelling and GIS-type operations:
 - feature extraction (such as floor areas)
 - filling missing data
 
- Assembled together, they form part of our wider pipeline. But as a standalone tool, OSMOX is useful for extracting insights from OSM in a reproducible manner.
+Once assembled, these form part of our wider pipeline. But as a standalone tool, OSMOX is useful for extracting insights from OSM in a reproducible manner.
 
  ![isle of man distance_to_nearest_transit](./readme_fixtures/distance-to-transit.png)
 *^ Isle of Man `distance_to_nearest_transit`.*
@@ -114,13 +114,13 @@ Configs are described below. The `<INPUT_PATH>` should point to an OSM map datas
 
 ## Options
 
-The most common option you will need to use is `crs`. The default CRS is British National Grid (BNG, or EPSG:27700), so if you are working outside the UK you should adjust this accordingly. Specifying a relevant CRS for your data is important if you would like to extract sensible units of measurement for distances and areas. If this isn't a concern, you can specify CRS as WGS-84 (`-crs epsg:4326`).
+The most common option you will need to use is `crs`. The default CRS is British National Grid (BNG, or EPSG:27700), so if you are working outside the UK, you should adjust this accordingly. Specifying a relevant CRS for your data is important if you would like to extract sensible units of measurement for distances and areas. If this isn't a concern, you can specify CRS as WGS-84 (`-crs epsg:4326`).
 
 OSMOX will return multi-use objects where applicable. For example, a building that contains both a restaurant and a shop can be labelled with `activities: "eating,shopping"`. This can make simple mapping of outputs quite complex, as there are many possible versions of combined use. To work around this problem, the optionional flag `-s` or `--single_use` may be set to instead output unique objects for each activity. For example, for the above case, extracting two identical buildings, one with `activity: "eating"` and the other with `activity: "shopping"`.
 
 ## Configs
 
-Configs are importan, so we provide some examples in `mc/configs` and a validation method for when you start editing or building your own configs:
+Configs are important, so we provide some examples in `mc/configs` and a validation method for when you start editing or building your own configs:
 
 ```{sh}
 osmox validate <CONFIG PATH>
@@ -160,9 +160,9 @@ INFO:osmox.main: Writting objects to: suffolk2/epsg_4326.geojson
 INFO:osmox.main:Done.
 ```
 
-Once complete, you will find OSMOX has created one or two outputs in the format of `.geojson` in the specified `<OUTPUT_PATH>`. If you have specified a CRS, you will find your outputs with two types of CRS:
-1) the CRS you specified
-2) EPSG:4326
+Once completed, you will find OSMOX has outputted file(s) in `.geojson` format in the specified `<OUTPUT_PATH>`. If you have specified a CRS, you will find two output files, named as follows:
+1) `<specified CRS code>.geojson`
+2) `epsg_4326.geojson`
 
 We generally refer to the outputs collectively as `facilities` and the properties as `features`. Note that each facility has a unique id, a number of features (depending on the configuration) and a point geometry. In the case of areas or polygons, such as buildings, the point represents the centroid.
 
@@ -256,8 +256,8 @@ Because OSMObjects do not always contain useful tags, we also infer object tags 
 
 The most common use case for this is building objects that are simply tagged as `building:yes`. We use the below logic to infer useful tags, such as 'building:shop' or 'building:residential'.
 
-- **Contains.** - If an OSMObject has no mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
-- **Within.** - Where an OSMObject *still* does not have a useful OSM tag - tags are assigned based on the tags of objects that contain the object. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `building:residential`.
+- **Contains** - If an OSMObject has no mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
+- **Within** - Where an OSMObject *still* does not have a useful OSM tag, the object tag will br assigned based on the tag of the object that it is contained within. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `building:residential`.
 
 In both cases we need to add the OSM tags we plan to use to the `activity_mapping` config, for example:
 
@@ -388,3 +388,4 @@ Multiple groups can also be defined, for example:
 - add .shp option
 - add other distance or similar type features, eg count of nearest neighbours
 - warning or feedback when trying to process really large datasets
+
