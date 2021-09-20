@@ -1,10 +1,10 @@
-# OSM Ox
+# OSMOX
 
 A tool for extracting locations and features from OpenStreetMap (OSM) data.
 
 ## Why?
 
-We use OSMOX to extract locations from OSM for city or national scale agent based models. In particulae, the focus tends to be on extracting buildings and their designated usages, for example `homes`, `schools`, `medical facilities` and `places of work`. However, this can also be abstracted to other objects such as transit, parks or land use.
+We use OSMOX to extract locations from OSM for city or national scale agent based models. In particular, the focus tends to be on extracting buildings and their designated usages, for example `homes`, `schools`, `medical facilities` and `places of work`. However, this can also be abstracted to other objects such as transit, parks or land use.
 
 Under the hood, OSMOX is a collection of labelling and GIS-type operations:
 
@@ -195,7 +195,7 @@ The primary use case for OSMOX is for extracting a representation of places wher
 }
 ```
 
-- **Activity Map** object activities based on OSM tags (eg: this building type 'university' is an education facility). Activity mapping is based on the same `config.json`, but we add a new section `activity_mapping`. For each OSMTag (a key such as `building` and a value such as `hotel`,) we map a list of activities:
+- **Activity Map** object activities based on OSM tags (eg: this building type 'university' is an education facility). Activity mapping is based on the same `config.json`, but we add a new section `activity_mapping`. For each OSM tag (a key such as `building` and a value such as `hotel`,) we map a list of activities:
 
 ```{json}
 {
@@ -234,7 +234,7 @@ Because OSMObjects do not always contain useful tags, we also infer object tags 
 The most common use case for this is building objects that are simply tagged as `building:yes`. We use the below logic to infer useful tags, such as 'building:shop' or 'building:residential'.
 
 - **Contains.** - If an OSMObject has no mappable tags (eg `building:yes`), tags are assigned based on the tags of objects that are contained within. For example, a building that contains an `amenity:shop` point is then tagged as `amenity:shop`.
-- **Within.** - Where an OSM object *still* does not have a useful OSM tag - tags are assigned based on the tags of objects that contain the object. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `building:residential`.
+- **Within.** - Where an OSMObject *still* does not have a useful OSM tag - tags are assigned based on the tags of objects that contain the object. The most common case is for untagged buildings to be assigned based on landuse objects. For example, a building within a `landuse:residential` area will be assigned with `building:residential`.
 
 In both cases we need to add the OSM tags we plan to use to the `activity_mapping` config, for example:
 
