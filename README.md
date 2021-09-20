@@ -21,6 +21,7 @@ Under the hood, OSMOX is a collection of labelling and GIS-type operations:
 
 ## Install
 
+I. Installation for Mac
 ```{sh}
 git clone git@github.com:arup-group/osmox.git
 pip install osmox
@@ -29,6 +30,28 @@ cd osmox
 pytest
 osmox --help
 ```
+
+II. Installation for Windows
+
+It is recommended to use an Anaconda environment for installation on Windows:
+
+```{sh}
+# Create a new environment in Anaconda
+conda create -n osmox python=3.7
+conda activate osmox
+conda install geopandas
+
+# Clone this repository locally
+git clone git@github.com:arup-group/osmox.git
+
+# Change directory
+cd osmox
+
+# Install the current directory in editable mode and test
+pip install -e .
+pytest
+```
+
 
 ## Quick Start
 
