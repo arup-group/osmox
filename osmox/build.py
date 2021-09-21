@@ -338,7 +338,7 @@ class ObjectHandler(osmium.SimpleHandler):
         :param size:  Optional tuple of x,y dimensions of new object polygon. Defaults to (10, 10)
         :param spacing:  Optional tuple of x,y dimensions of new objects spacing. Defaults to (25, 25)
 
-        :returns: A tuple of twi ints representing number of empty zones, number of new objects
+        :returns: A tuple of two ints representing number of empty zones, number of new objects
         """
 
         empty_zones = 0  # conuter for fill zones
