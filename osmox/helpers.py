@@ -100,11 +100,11 @@ def imperial_to_metric(height):
     """
     inches = float(height.split("'")[0].strip()) * 12
     if '"' in height:
-        inches += float(height.split("'")[-1].replace('"',"").strip())
-    return round(height/39.3701,3)
+        inches += float(height.split("'")[-1].replace('"', "").strip())
+    return round(height/39.3701, 3)
 
 
-def progressBar(iterable, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
     """
     from here: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     Call in a loop to create terminal progress bar
@@ -119,12 +119,13 @@ def progressBar(iterable, prefix = '', suffix = '', decimals = 1, length = 100, 
         printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
     """
     total = len(iterable)
+
     # Progress Bar Printing Function
-    def printProgressBar (iteration):
+    def printProgressBar(iteration):
         percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
         filledLength = int(length * iteration // total)
         bar = fill * filledLength + '-' * (length - filledLength)
-        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
     # Initial Call
     printProgressBar(0)
     # Update Progress Bar
@@ -133,6 +134,7 @@ def progressBar(iterable, prefix = '', suffix = '', decimals = 1, length = 100, 
         printProgressBar(i + 1)
     # Print New Line on Complete
     print()
+
 
 def get_distance(p):
     """
@@ -143,7 +145,7 @@ def get_distance(p):
     :return float: Distance in meters
     """
     distance = (
-        (p[0].x - p[1].x)**2 +\
+        (p[0].x - p[1].x)**2 +
         (p[0].y - p[1].y)**2
     ) ** 0.5
     return distance
