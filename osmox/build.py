@@ -101,7 +101,9 @@ class Object:
 
     def units(self):
         if 'building:flats' in self.osm_tags:
-            return int(self.osm_tags['building:flats'])
+            flats = self.osm_tags['building:flats']
+            if flats.isnumeric():
+                return float(flats)  # todo ensure integer
         return 1
 
     def __str__(self):
