@@ -1,0 +1,17 @@
+{
+    "filter": {
+        "leisure": ["pitch", "park", "playground"]
+    },
+
+    "object_features": ["units", "transit_distance", "levels", "area", "floor_area"],
+
+    "default_tags": [["building", "residential"]],
+
+    "activity_mapping": {
+        "leisure": {
+            "park": ["leisure"],
+            "playground": ["leisure"],
+            "pitch": ["leisure"]
+        }
+    }
+}
