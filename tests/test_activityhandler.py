@@ -9,8 +9,10 @@ fixtures_root = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "fixtures")
 )
 toy_osm_path = os.path.join(fixtures_root, "toy.osm")
+park_osm_path = os.path.join(fixtures_root, "park.osm")
 test_osm_path = os.path.join(fixtures_root, "toy_selection.osm")
 test_config_path = os.path.join(fixtures_root, "test_config.json")
+leisure_config_path = os.path.join(fixtures_root, "test_config_leisure.json")
 
 
 @pytest.fixture()
@@ -114,7 +116,41 @@ def test_load_toy(testHandler):
     handler.apply_file(toy_osm_path, locations=True, idx='flex_mem')
     assert len(handler.objects) == 5
     assert len(handler.points) == 6
-    assert len(handler.areas) == 2
+    assert len(handler.areas) == 3
+
+
+@pytest.fixture()
+def test_leisure_config():
+    return config.load(leisure_config_path)
+
+
+@pytest.fixture()
+def leisureHandler(test_leisure_config):
+    return build.ObjectHandler(test_leisure_config, crs='epsg:4326')
+
+
+def test_leisure_handler(leisureHandler):
+    handler = leisureHandler
+    handler.apply_file(park_osm_path, locations=True, idx='flex_mem')
+    handler.assign_tags()
+    handler.assign_activities()
+    df = handler.geodataframe(single_use=True)
+    assert "leisure" in set(df.activity)
+
+
+# londinium_config_path = os.path.join(fixtures_root, "londinium_config.json")
+# londinium = os.path.join(fixtures_root, "londinium.osm.pbf")
+
+# def test_load_londinium(leisureHandler):
+#     handler = leisureHandler
+#     print(handler.filter)
+#     handler.apply_file(londinium, locations=True, idx='flex_mem')
+#     handler.assign_tags()
+#     handler.assign_activities()
+#     df = handler.geodataframe(single_use=True)
+#     print(df.columns)
+#     print(set(df.activity))
+#     print(df)
 
 
 def test_activities_from_area_intersection(testHandler):
