@@ -50,3 +50,24 @@ def test_fill_objects():
     assert obj.geom.equals(Polygon([(0,0),(0,10),(10,10),(10,0),(0,0)]))
     assert obj.idx == "fill_0"
     assert obj.activities == ["act"]
+
+
+@pytest.mark.parametrize(
+    "inp,expected", [
+        ("2", 2.0),
+        ("4m", 4.0),
+        ("2ft", 6.0),
+        ]
+    )
+def test_height_to_m(inp, expected):
+    assert helpers.height_to_m(inp) == expected
+
+
+@pytest.mark.parametrize(
+    "inp,expected", [
+        ("1'", round(12/39.3701, 3)),
+        ("1'1\"", round(13/39.3701, 3)),
+        ]
+    )
+def test_imperial_to_metric(inp, expected):
+    assert helpers.imperial_to_metric(inp) == expected

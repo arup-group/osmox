@@ -1,12 +1,10 @@
-import click
-import pathlib
-import os
-import json
 import logging
+import os
 
-from osmox.helpers import PathPath
+import click
+
 from osmox import config, build
-
+from osmox.helpers import PathPath
 
 default_config_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../configs/config.json")
@@ -19,6 +17,7 @@ default_output_path = os.path.abspath(
 )
 logger = logging.getLogger(__name__)
 
+
 @click.group()
 def osmox():
     """
@@ -27,7 +26,7 @@ def osmox():
     pass
 
 
-@osmox.command()    
+@osmox.command()
 @click.argument("config_path", nargs=1, type=PathPath(exists=True), required=True)
 def validate(config_path):
     """
@@ -35,7 +34,7 @@ def validate(config_path):
     """
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
-    logger.warning(f"Done.")
+    logger.warning("Done.")
 
 
 @osmox.command()
@@ -45,10 +44,8 @@ def validate(config_path):
 @click.option("-crs", "--crs", type=str, default="epsg:27700",
               help="crs string eg (default): 'epsg:27700' (UK grid)")
 @click.option("-s", "--single_use", is_flag=True,
-            help="split multi-activity facilities into multiple single-activity facilities")
-
+              help="split multi-activity facilities into multiple single-activity facilities")
 def run(config_path, input_path, output_path, crs, single_use):
-
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
@@ -64,11 +61,11 @@ def run(config_path, input_path, output_path, crs, single_use):
     logger.info(f" Found {len(handler.points)} nodes with valid tags.")
     logger.info(f" Found {len(handler.areas)} areas with valid tags.")
 
-    logger.info(f" Assigning object tags.")
+    logger.info(" Assigning object tags.")
     handler.assign_tags()
     logger.info(f" Finished assigning tags: f{handler.log}.")
 
-    logger.info(f" Assigning object activities.")
+    logger.info(" Assigning object activities.")
     handler.assign_activities()
 
     if cnfg.get("fill_missing_activities"):
@@ -81,7 +78,7 @@ def run(config_path, input_path, output_path, crs, single_use):
                 size=group["size"],
                 spacing=group["spacing"]
             )
-            logger.info(f" Filled {zones} zones with {objects} objects.") 
+            logger.info(f" Filled {zones} zones with {objects} objects.")
 
     if cnfg.get("object_features"):
         logger.info(f" Assigning object features: {cnfg['object_features']}.")
@@ -100,7 +97,7 @@ def run(config_path, input_path, output_path, crs, single_use):
         file.write(gdf.to_json())
 
     if not crs == "epsg:4326":
-        logger.info(f" Reprojecting output to epsg:4326 (lat lon)")
+        logger.info(" Reprojecting output to epsg:4326 (lat lon)")
         gdf.to_crs("epsg:4326", inplace=True)
         path = output_path / "epsg_4326.geojson"
         logger.info(f" Writting objects to: {path}")

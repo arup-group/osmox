@@ -1,18 +1,15 @@
-import json
-import pandas as pd
-import geopandas as gp
-from collections import defaultdict
-import osmium
-import shapely.wkb as wkblib
 import logging
 from collections import namedtuple
-from pyproj import Proj, Transformer, CRS
+
+import geopandas as gp
+import osmium
+import pandas as pd
+import shapely.wkb as wkblib
+from pyproj import Transformer, CRS
+from shapely.geometry import MultiPoint
 from shapely.ops import transform, nearest_points
-from shapely.geometry import Point, Polygon, MultiPoint
 
-
-from osmox import config, helpers
-
+from osmox import helpers
 
 OSMTag = namedtuple('OSMtag', 'key value')
 OSMObject = namedtuple('OSMobject', 'idx, activity_tags, geom')
@@ -23,6 +20,7 @@ AVAILABLE_FEATURES = [
     "units",
     "transit_distance"
 ]
+
 
 class Object:
 
@@ -61,7 +59,7 @@ class Object:
         "sports_hall": 1,
         "stadium": 1
     }
-    
+
     def __init__(self, idx, osm_tags, activity_tags, geom) -> None:
         self.idx = idx
         self.osm_tags = dict(osm_tags)
@@ -69,7 +67,6 @@ class Object:
         self.geom = geom
         self.activities = None
         self.features = {}
-
 
     def add_features(self, features):
         available = {
@@ -111,7 +108,7 @@ class Object:
 
     def __str__(self):
         return f"""
-            {self.__class__}: 
+            {self.__class__}:
             id: {self.idx}
             osm_tags: {self.osm_tags}
             activity_tags: {self.activity_tags}
@@ -143,12 +140,12 @@ class Object:
     def assign_activities(self, activity_lookup, weight_calculations=None):
         """
         Create a list of unique activities based on activity tags.
-        This method is currently kept here incase we want to deal with 
+        This method is currently kept here incase we want to deal with
         duplicate assignments differently in future.
         """
         act_set = set()
         for tag in self.activity_tags:
-            act_set |= set(activity_lookup.get(tag.key,{}).get(tag.value,[]))
+            act_set |= set(activity_lookup.get(tag.key, {}).get(tag.value, []))
         self.activities = list(act_set)
 
     def get_closest_distance(self, targets, name):
@@ -294,7 +291,7 @@ class ObjectHandler(osmium.SimpleHandler):
 
     def assign_tags(self):
 
-        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+        for obj in helpers.progressBar(self.objects, prefix='Progress:', suffix='Complete', length=50):
 
             if obj.activity_tags:
                 # if an onject already has activity tags, continue
@@ -310,7 +307,7 @@ class ObjectHandler(osmium.SimpleHandler):
                 # else try to assign activity tags based on containing area objects
                 self.log["areas"] += 1
                 continue
-            
+
             if self.default_tags:
                 # otherwise apply defaults if set
                 self.log["defaults"] += 1
@@ -318,32 +315,32 @@ class ObjectHandler(osmium.SimpleHandler):
                     obj.apply_default_tag(a)
 
     def assign_activities(self):
-        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+        for obj in helpers.progressBar(self.objects, prefix='Progress:', suffix='Complete', length=50):
             obj.assign_activities(self.activity_config)
 
-
     def fill_missing_activities(
-        self,
-        area_tags=(("landuse", "residential")),
-        required_acts=("home"),
-        new_tags=(("building", "house")),
-        size=(10, 10), spacing=(25, 25)
-        ):
+            self,
+            area_tags=("landuse", "residential"),
+            required_acts="home",
+            new_tags=("building", "house"),
+            size=(10, 10),
+            spacing=(25, 25)
+    ):
         """
         Fill "empty" areas with new objects. Empty areas are defined as areas with the select_tags but
         not containing any objects of the required_acts.
         An example of such missing objects would be missing home facilities in a residential area.
         Empty areas are filled with new objects of given size at given spacing.
 
-        Args:
-            area_tags (tuple, optional): Defines (any) osm tags of areas to be considered. Defaults to (("landuse", "residential")).
-            required_acts (tuple, optional): Expected (any) object activity types to be found in areas. Defaults to ("home").
-            new_tags (tuple, optional): Tags for new objects. Defaults to (("building", "house")).
-            size (tuple, optional): x,y dimensions of new object polygon. Defaults to (10, 10).
-            spacing (tuple, optional): x,y dimensions of new objects spacing. Defaults to (25, 25).
+        :param area_tags: Optional tuple to define (any) osm tags of areas to be considered. Defaults to ("landuse",
+        "residential")
+        :param required_acts: Optional string value representing expected (any) object activity types to be found in
+        areas.Defaults to "home"
+        :param new_tags: Optional tuple of tags for new objects. Defaults to ("building", "house").
+        :param size:  Optional tuple of x,y dimensions of new object polygon. Defaults to (10, 10)
+        :param spacing:  Optional tuple of x,y dimensions of new objects spacing. Defaults to (25, 25)
 
-        Returns:
-            int, int: number of empty zones, number of new objects
+        :returns: A tuple of two ints representing number of empty zones, number of new objects
         """
 
         empty_zones = 0  # conuter for fill zones
@@ -351,7 +348,7 @@ class ObjectHandler(osmium.SimpleHandler):
         new_osm_tags = [OSMTag(key=k, value=v) for k, v in area_tags]
         new_tags = [OSMTag(key=k, value=v) for k, v in new_tags]
 
-        for area in helpers.progressBar(self.areas, prefix = 'Progress:', suffix = 'Complete', length = 50):
+        for area in helpers.progressBar(self.areas, prefix='Progress:', suffix='Complete', length=50):
 
             if not helpers.tag_match(a=area_tags, b=area.activity_tags):
                 continue
@@ -382,7 +379,7 @@ class ObjectHandler(osmium.SimpleHandler):
         """
         ["units", "floors", "area", "floor_area"]
         """
-        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+        for obj in helpers.progressBar(self.objects, prefix='Progress:', suffix='Complete', length=50):
             obj.add_features(self.object_features)
 
     def assign_nearest_distance(self, target_act):
@@ -390,7 +387,7 @@ class ObjectHandler(osmium.SimpleHandler):
         For each facility, calculate euclidean distance to targets of given activity type.
         """
         targets = self.extract_targets(target_act)
-        for obj in helpers.progressBar(self.objects, prefix = 'Progress:', suffix = 'Complete', length = 50):
+        for obj in helpers.progressBar(self.objects, prefix='Progress:', suffix='Complete', length=50):
             obj.get_closest_distance(targets, target_act)
 
     def extract_targets(self, target_act):

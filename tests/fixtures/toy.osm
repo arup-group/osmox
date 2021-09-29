@@ -2481,7 +2481,12 @@
     <tag k='building' v='yes' />
     <tag k='source' v='Yahoo' />
   </way>
-  <way id='287931052' action='delete' timestamp='2016-04-10T16:11:05Z' uid='290680' user='wheelmap_visitor' version='2' changeset='38454000'>
+  <way id='287931052' timestamp='2016-04-10T16:11:05Z' uid='290680' user='wheelmap_visitor' version='2' changeset='38454000'>
+    <nd ref='496827808' />
+    <nd ref='6992129443' />
+    <nd ref='6992129442' />
+    <nd ref='4255397514' />
+    <nd ref='496827808' />
     <tag k='leisure' v='pitch' />
     <tag k='sport' v='basketball' />
     <tag k='wheelchair' v='yes' />
