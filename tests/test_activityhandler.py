@@ -138,21 +138,6 @@ def test_leisure_handler(leisureHandler):
     assert "leisure" in set(df.activity)
 
 
-# londinium_config_path = os.path.join(fixtures_root, "londinium_config.json")
-# londinium = os.path.join(fixtures_root, "londinium.osm.pbf")
-
-# def test_load_londinium(leisureHandler):
-#     handler = leisureHandler
-#     print(handler.filter)
-#     handler.apply_file(londinium, locations=True, idx='flex_mem')
-#     handler.assign_tags()
-#     handler.assign_activities()
-#     df = handler.geodataframe(single_use=True)
-#     print(df.columns)
-#     print(set(df.activity))
-#     print(df)
-
-
 def test_activities_from_area_intersection(testHandler):
     testHandler.add_object(
         idx=0,
