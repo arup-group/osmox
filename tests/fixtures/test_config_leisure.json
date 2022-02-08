@@ -3,7 +3,7 @@
         "leisure": ["pitch", "park", "playground"]
     },
 
-    "object_features": ["units", "transit_distance", "levels", "area", "floor_area"],
+    "object_features": ["units", "levels", "area", "floor_area"],
 
     "default_tags": [["building", "residential"]],
 

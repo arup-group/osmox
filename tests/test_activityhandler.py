@@ -126,7 +126,7 @@ def test_leisure_config():
 
 @pytest.fixture()
 def leisureHandler(test_leisure_config):
-    return build.ObjectHandler(test_leisure_config, crs='epsg:4326')
+    return build.ObjectHandler(test_leisure_config, crs='epsg:4326', lazy=False)
 
 
 def test_leisure_handler(leisureHandler):
