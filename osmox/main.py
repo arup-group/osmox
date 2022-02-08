@@ -58,8 +58,6 @@ def run(config_path, input_path, output_path, crs, single_use, lazy):
         os.mkdir(output_path)
     
     logger.info(f"Creating handler with crs: {crs}.")
-    print(crs)
-    print(lazy)
     if single_use:
         logger.info(f"Handler is single-use, different activities will get unique locations. even if these are duplicated.")
     if lazy:

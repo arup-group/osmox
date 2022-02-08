@@ -117,29 +117,22 @@ class Object:
             """
 
     def add_tags(self, osm_objects):
-        print(f"adding tag to {self.idx}")
-        print(f"existing = {self.activity_tags}")
         for o in osm_objects:
             if o.activity_tags:
                 self.activity_tags.extend(o.activity_tags)
-        print(f"updated = {self.activity_tags}")
 
     def apply_default_tag(self, tag):
         self.activity_tags = [OSMTag(tag[0], tag[1])]
 
     def assign_points(self, points):
-        print("assigning points")
         snaps = [c for c in points.intersection(self.geom.bounds)]
-        print(f"snaps = {snaps}")
         if snaps:
             self.add_tags(snaps)
             return True
 
     def assign_areas(self, areas):
-        print("assigning areas")
         snaps = [c for c in areas.intersection(self.geom.bounds)]
         snaps = [c for c in snaps if c.geom.contains(self.geom.centroid)]
-        print(f"snaps = {snaps}")
         if snaps:
             self.add_tags(snaps)
             return True
@@ -316,27 +309,22 @@ class ObjectHandler(osmium.SimpleHandler):
         """
 
         for obj in helpers.progressBar(self.objects, prefix='Progress:', suffix='Complete', length=50):
-            print(obj.idx, obj.activity_tags)
 
             if obj.activity_tags:
-                print("existing:", obj.idx, obj.activity_tags)
                 # if an onject already has activity tags, continue
                 self.log["existing"] += 1
 
             if obj.assign_points(self.points):
-                print("pre point assignment:", obj.idx, obj.activity_tags)
                 # else try to assign activity tags based on contained point objects
                 self.log["points"] += 1
                 continue
 
             if obj.assign_areas(self.areas):
-                print("pre area assignment:", obj.idx, obj.activity_tags)
                 # else try to assign activity tags based on containing area objects
                 self.log["areas"] += 1
                 continue
 
             if self.default_tags and not obj.activity_tags:
-                print("defaults need to be assigned...", obj.idx, obj.activity_tags)
                 # otherwise apply defaults if set
                 self.log["defaults"] += 1
                 for a in self.default_tags:
@@ -455,19 +443,11 @@ class ObjectHandler(osmium.SimpleHandler):
         return MultiPoint(targets)
 
     def geodataframe(self, single_use=False):
-        print("+++++++++++++++++++")
-        # print(self.objects)
-        print(single_use)
 
         if single_use:
-            print("SINGLE USE")
-
             df = pd.DataFrame(
                 (summary for o in self.objects for summary in o.single_activity_summaries())
             )
-            print("====")
-            print(df)
-            print("====")
             return gp.GeoDataFrame(df, geometry='geometry', crs=self.crs)
 
         df = pd.DataFrame(
