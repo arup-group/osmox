@@ -1,4 +1,3 @@
-from linecache import lazycache
 import logging
 import os
 
@@ -56,12 +55,12 @@ def run(config_path, input_path, output_path, crs, single_use, lazy):
     if not os.path.exists(output_path):
         logger.info(f'Creating output directory: {output_path}')
         os.mkdir(output_path)
-    
+
     logger.info(f"Creating handler with crs: {crs}.")
     if single_use:
-        logger.info(f"Handler is single-use, different activities will get unique locations. even if these are duplicated.")
+        logger.info("Handler is single-use, activities will get unique locations.")
     if lazy:
-        logger.info(f"Handler will be using lazy assignment, this may suppress some multi-use.")
+        logger.info("Handler will be using lazy assignment, this may suppress some multi-use.")
 
     handler = build.ObjectHandler(
         config=cnfg,

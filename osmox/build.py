@@ -199,7 +199,7 @@ class ObjectHandler(osmium.SimpleHandler):
         from_crs='epsg:4326',
         lazy=False,
         level=logging.DEBUG
-        ):
+    ):
 
         super().__init__()
         logging.basicConfig(level=level)
@@ -292,7 +292,6 @@ class ObjectHandler(osmium.SimpleHandler):
             self.add_object(idx=a.id, osm_tags=a.tags, activity_tags=activity_tags, geom=self.fab_area(a))
         elif activity_tags:
             self.add_area(idx=a.id, activity_tags=activity_tags, geom=self.fab_area(a))
-
 
     def assign_tags(self):
         """
