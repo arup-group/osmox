@@ -45,7 +45,9 @@ def validate(config_path):
               help="crs string eg (default): 'epsg:27700' (UK grid)")
 @click.option("-s", "--single_use", is_flag=True,
               help="split multi-activity facilities into multiple single-activity facilities")
-def run(config_path, input_path, output_path, crs, single_use):
+@click.option("-l", "--lazy", is_flag=True,
+              help="if filtered object already has a label, do not search for more (supresses multi-use)")
+def run(config_path, input_path, output_path, crs, single_use, lazy):
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
@@ -54,8 +56,18 @@ def run(config_path, input_path, output_path, crs, single_use):
         logger.info(f'Creating output directory: {output_path}')
         os.mkdir(output_path)
 
-    handler = build.ObjectHandler(cnfg, crs)
-    logger.info(f" Filtering all objects found in {input_path}.")
+    logger.info(f"Creating handler with crs: {crs}.")
+    if single_use:
+        logger.info("Handler is single-use, activities will get unique locations.")
+    if lazy:
+        logger.info("Handler will be using lazy assignment, this may suppress some multi-use.")
+
+    handler = build.ObjectHandler(
+        config=cnfg,
+        crs=crs,
+        lazy=lazy
+        )
+    logger.info(f" Filtering all objects found in {input_path}. This may take a long while.")
     handler.apply_file(str(input_path), locations=True, idx='flex_mem')
     logger.info(f" Found {len(handler.objects)} buildings.")
     logger.info(f" Found {len(handler.points)} nodes with valid tags.")

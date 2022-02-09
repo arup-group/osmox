@@ -192,12 +192,20 @@ class ObjectHandler(osmium.SimpleHandler):
     wkbfab = osmium.geom.WKBFactory()
     logger = logging.getLogger(__name__)
 
-    def __init__(self, config, crs='epsg:27700', from_crs='epsg:4326', level=logging.DEBUG):
+    def __init__(
+        self,
+        config,
+        crs='epsg:27700',
+        from_crs='epsg:4326',
+        lazy=False,
+        level=logging.DEBUG
+    ):
 
         super().__init__()
         logging.basicConfig(level=level)
         self.cnfg = config
         self.crs = crs
+        self.lazy = lazy
         self.filter = self.cnfg["filter"]
         self.object_features = self.cnfg["object_features"]
         self.default_tags = self.cnfg["default_tags"]
@@ -285,11 +293,44 @@ class ObjectHandler(osmium.SimpleHandler):
         elif activity_tags:
             self.add_area(idx=a.id, activity_tags=activity_tags, geom=self.fab_area(a))
 
-    """
-    Assign unknown tags to buildings spatially.
-    """
-
     def assign_tags(self):
+        """
+        Assign unknown tags to buildings spatially.
+        """
+        if not self.lazy:
+            self.assign_tags_full()
+        else:
+            self.assign_tags_lazy()
+
+    def assign_tags_full(self):
+        """
+        Assign unknown tags to buildings spatially.
+        """
+
+        for obj in helpers.progressBar(self.objects, prefix='Progress:', suffix='Complete', length=50):
+
+            if obj.activity_tags:
+                # if an onject already has activity tags, continue
+                self.log["existing"] += 1
+
+            if obj.assign_points(self.points):
+                # else try to assign activity tags based on contained point objects
+                self.log["points"] += 1
+                continue
+
+            if obj.assign_areas(self.areas):
+                # else try to assign activity tags based on containing area objects
+                self.log["areas"] += 1
+                continue
+
+            if self.default_tags and not obj.activity_tags:
+                # otherwise apply defaults if set
+                self.log["defaults"] += 1
+                for a in self.default_tags:
+                    obj.apply_default_tag(a)
+
+    def assign_tags_lazy(self):
+        """Assign tags if filtered object does not already have useful tags."""
 
         for obj in helpers.progressBar(self.objects, prefix='Progress:', suffix='Complete', length=50):
 
@@ -401,8 +442,8 @@ class ObjectHandler(osmium.SimpleHandler):
         return MultiPoint(targets)
 
     def geodataframe(self, single_use=False):
-        if single_use:
 
+        if single_use:
             df = pd.DataFrame(
                 (summary for o in self.objects for summary in o.single_activity_summaries())
             )

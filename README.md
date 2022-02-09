@@ -55,10 +55,12 @@ pytest
 
 ## Quick Start
 
-Extract `home`, `work`, `education`, `shop` and various other activity locations ("facilities") for the Isle of Man, using the following command (the path is given from OSMOX project root):
+Extract `home`, `work`, `education`, `shop` and various other activity locations ("facilities") for the Isle of Man, using the following steps (paths is given from OSMOX project root):
+
+First download `isle-of-man-latest.osm.pbf` from [geobabrik](https://download.geofabrik.de/europe/isle-of-man.html) and place in an `example` directory.
 
 ```{sh}
-osmox run configs/example.json example_data/isle-of-man.osm example -crs "epsg:27700"
+osmox run configs/example.json example/isle-of-man.osm example -crs "epsg:27700"
 ```
 
 After about 30 seconds, you should find the outputs in geojson format in the specified `example` directory. The geojson file contains locations for the extracted facilities, and each facility includes a number of features with coordinates given in WGS-84 (EPSG:4326) coordinate reference system (CRS), so that they can be quickly inspected via [kepler](https://kepler.gl) or equivalent.
@@ -91,8 +93,6 @@ After about 30 seconds, you should find the outputs in geojson format in the spe
         ...
 ```
 
-
-
 ![isle of man floor areas](./readme_fixtures/floor-areas.png)
 *^ Isle of Man facility `floor_area` feature. Approximated based on polygon areas and floor labels or sensible defaults.*
 
@@ -106,9 +106,12 @@ After about 30 seconds, you should find the outputs in geojson format in the spe
 ```{sh}
 osmox run --help
 
+Usage: osmox run [OPTIONS] CONFIG_PATH INPUT_PATH OUTPUT_PATH
+
 Options:
   -crs, --crs TEXT  crs string eg (default): 'epsg:27700' (UK grid)
   -s, --single_use  split multi-activity facilities into multiple single-activity facilities
+  -l, --lazy        if filtered object already has a label, do not search for more (supresses multi-use but is faster)
   --help            Show this message and exit.
 ```
 
