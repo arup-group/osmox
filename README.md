@@ -60,10 +60,12 @@ Extract `home`, `work`, `education`, `shop` and various other activity locations
 First download `isle-of-man-latest.osm.pbf` from [geobabrik](https://download.geofabrik.de/europe/isle-of-man.html) and place in an `example` directory.
 
 ```{sh}
-osmox run configs/example.json example/isle-of-man.osm example -crs "epsg:27700"
+osmox run configs/example.json example/isle-of-man-latest.osm.pbf example -crs epsg:27700 -l
 ```
 
 After about 30 seconds, you should find the outputs in geojson format in the specified `example` directory. The geojson file contains locations for the extracted facilities, and each facility includes a number of features with coordinates given in WGS-84 (EPSG:4326) coordinate reference system (CRS), so that they can be quickly inspected via [kepler](https://kepler.gl) or equivalent.
+
+`-l` is short for `--lazy` which helps osmox run a little faster.
 
 ```{geojson}
 {

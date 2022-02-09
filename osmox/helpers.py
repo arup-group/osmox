@@ -105,7 +105,7 @@ def imperial_to_metric(height):
     return round(inches/39.3701, 3)
 
 
-def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
+def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='|', printEnd="\r"):
     """
     from here: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     Call in a loop to create terminal progress bar
