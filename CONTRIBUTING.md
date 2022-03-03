@@ -35,6 +35,8 @@ information about the environment in which the process had been ran. It is also 
 
 ## Contributing Code - Pull Request Process
 
+To find beginner-friendly issues that you might want to take a run at, look [here](https://github.com/arup-group/osmox/contribute).
+
 1. All new work is done in a branch taken from master, details can be found here:
 [feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow)
 2. Ensure your work is covered by unit tests to the required percentage level. This script 
