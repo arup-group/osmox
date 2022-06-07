@@ -119,6 +119,22 @@ Options:
 
 Configs are described below. The `<INPUT_PATH>` should point to an OSM map dataset (`osm.xml` and `osm.pbf` are supported). The `<OUTPUT_PATH>` should point to an exiting or new output directory.
 
+### Using Docker
+#### Build the image
+
+    docker build -t "osmox" .
+
+#### Running OSMOX in a container
+
+Once you have built the image, the only thing you need to do is add the path to the folder where your inputs are stored to the command, in order to mount that folder (i.e. give the container access to the data in this folder):
+
+    docker run -v DATA_FOLDER_PATH:/MOUNT_PATH osmox CONFIG_PATH INPUT_PATH OUTPUT_PATH -crs epsg:27700 -l
+
+For example, if your input data and config is stored on your machine in `/Users/user_1/mydata`, and this is also the directoy where you wish to place the outputs:
+
+    docker run -v /Users/user_1/mydata:/mnt/mydata osmox /mnt/mydata/example_config.json /mnt/mydata/isle-of-man-latest.osm.pbf /mnt/mydata/ -crs epsg:27700 -l
+
+
 ## Options
 
 The most common option you will need to use is `crs`. The default CRS is British National Grid (BNG, or EPSG:27700), so if you are working outside the UK you should adjust this accordingly. Specifying a relevant CRS for your data is important if you would like to extract sensible units of measurement for distances and areas. If this isn't a concern, you can specify CRS as WGS-84 (`-crs epsg:4326`).
