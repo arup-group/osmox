@@ -38,3 +38,51 @@ jobs:
       run: |
         export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
         bash ./scripts/code-coverage.sh
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+    - name: Zip and Send to S3
+      env:
+        AWS_S3_CODE_BUCKET: ${{ secrets.AWS_S3_CODE_BUCKET }}
+      run: |
+        echo $GITHUB_REPOSITORY
+        repo_slug=`echo $GITHUB_REPOSITORY | awk -F '/' '{print $2}'`;
+        echo $repo_slug
+        echo $GITHUB_SHA
+        echo $GITHUB_SHA > release
+        if test "$GITHUB_REF" = "refs/heads/main"; then
+          echo "Branch is main - no need to make a release name..."
+        else
+          echo "Making a release name for non-main branch..."
+          branch=`echo $GITHUB_REF | awk -F '/' '{print $3}'`
+          release_name=`echo $GITHUB_ACTOR-$branch`
+          echo "Release name: $release_name"
+          echo $release_name > release_name
+          echo "Created a release_name file"
+        fi
+        zip -r app.zip .
+        aws s3 cp app.zip "s3://$AWS_S3_CODE_BUCKET/$repo_slug.zip"
+    - name: Send build success notification
+      if: success()
+      uses: rtCamp/action-slack-notify@v2.0.0
+      env:
+        SLACK_MESSAGE: ${{ github.repository }} build ${{ github.run_number }} launched by ${{ github.actor }} has succeeded
+        SLACK_TITLE: Build Success
+        SLACK_CHANNEL: city-modelling-feeds
+        SLACK_USERNAME: GitHub Build Bot
+        SLACK_ICON: https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2017-12-19/288981919427_f45f04edd92902a96859_512.png
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    - name: Send build failure notification
+      if: failure()
+      uses: rtCamp/action-slack-notify@v2.0.0
+      env:
+        SLACK_COLOR: '#FF0000'
+        SLACK_MESSAGE: ${{ github.repository }} build ${{ github.run_number }} launched by ${{ github.actor }} has failed
+        SLACK_TITLE: Build Failure!
+        SLACK_CHANNEL: city-modelling-feeds
+        SLACK_USERNAME: GitHub Build Bot
+        SLACK_ICON: https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2017-12-19/288981919427_f45f04edd92902a96859_512.png
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
