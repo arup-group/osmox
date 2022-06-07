@@ -3,3 +3,5 @@
 .git
 *.md
 readme_fixtures
+.github/
+tests/
