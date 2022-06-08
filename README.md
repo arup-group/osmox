@@ -21,6 +21,8 @@ Once assembled, these form part of our wider pipeline. But as a standalone tool,
 
 ## Install
 
+Note: you can use the instructions [here](#using-docker) to build a Docker image for OSMOX and run it in a container if you cannot install it locally.
+
 I. Installation for Mac
 ```{sh}
 git clone git@github.com:arup-group/osmox.git
@@ -118,6 +120,22 @@ Options:
 ```
 
 Configs are described below. The `<INPUT_PATH>` should point to an OSM map dataset (`osm.xml` and `osm.pbf` are supported). The `<OUTPUT_PATH>` should point to an exiting or new output directory.
+
+### Using Docker
+#### Build the image
+
+    docker build -t "osmox" .
+
+#### Running OSMOX in a container
+
+Once you have built the image, the only thing you need to do is add the path to the folder where your inputs are stored to the command, in order to mount that folder (i.e. give the container access to the data in this folder):
+
+    docker run -v DATA_FOLDER_PATH:/MOUNT_PATH osmox CONFIG_PATH INPUT_PATH OUTPUT_PATH -crs epsg:27700 -l
+
+For example, if your input data and config is stored on your machine in `/Users/user_1/mydata`, and this is also the directoy where you wish to place the outputs:
+
+    docker run -v /Users/user_1/mydata:/mnt/mydata osmox /mnt/mydata/example_config.json /mnt/mydata/isle-of-man-latest.osm.pbf /mnt/mydata/ -crs epsg:27700 -l
+
 
 ## Options
 
