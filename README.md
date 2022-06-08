@@ -21,7 +21,7 @@ Once assembled, these form part of our wider pipeline. But as a standalone tool,
 
 ## Install
 
-Note: you can use the instructions [here](###Using-Docker) to build a Docker image for OSMOX and run it in a container if you cannot install it locally.
+Note: you can use the instructions [here](#using-docker) to build a Docker image for OSMOX and run it in a container if you cannot install it locally.
 
 I. Installation for Mac
 ```{sh}
