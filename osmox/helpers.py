@@ -35,7 +35,7 @@ class AutoTree(index.Index):
 
     def __iter__(self):
         for o in self.objects:
-            yield(o)
+            yield o
 
     def __len__(self):
         return self.counter
