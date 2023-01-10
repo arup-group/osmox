@@ -62,10 +62,10 @@ Extract `home`, `work`, `education`, `shop` and various other activity locations
 First download `isle-of-man-latest.osm.pbf` from [geobabrik](https://download.geofabrik.de/europe/isle-of-man.html) and place in an `example` directory.
 
 ```{sh}
-osmox run configs/example.json example/isle-of-man-latest.osm.pbf example -crs epsg:27700 -l
+osmox run configs/example.json example/isle-of-man-latest.osm.pbf isle-of-man -crs epsg:27700 -l
 ```
 
-After about 30 seconds, you should find the outputs in geojson format in the specified `example` directory. The geojson file contains locations for the extracted facilities, and each facility includes a number of features with coordinates given in WGS-84 (EPSG:4326) coordinate reference system (CRS), so that they can be quickly inspected via [kepler](https://kepler.gl) or equivalent.
+After about 30 seconds, you should find the outputs in geojson format in the same `example` directory as your OSM input file. The geojson file contains locations for the extracted facilities, and each facility includes a number of features with coordinates given in WGS-84 (EPSG:4326) coordinate reference system (CRS), so that they can be quickly inspected via [kepler](https://kepler.gl) or equivalent.
 
 `-l` is short for `--lazy` which helps osmox run a little faster.
 
@@ -105,12 +105,12 @@ After about 30 seconds, you should find the outputs in geojson format in the spe
 
 ## OSMOX Run
 
-`osmox run <CONFIG_PATH> <INPUT_PATH> <OUTPUT_PATH>` is the main entry point for OSMOX:
+`osmox run <CONFIG_PATH> <INPUT_PATH> <OUTPUT_NAME>` is the main entry point for OSMOX:
 
 ```{sh}
 osmox run --help
 
-Usage: osmox run [OPTIONS] CONFIG_PATH INPUT_PATH OUTPUT_PATH
+Usage: osmox run [OPTIONS] CONFIG_PATH INPUT_PATH OUTPUT_NAME
 
 Options:
   -crs, --crs TEXT  crs string eg (default): 'epsg:27700' (UK grid)
@@ -119,7 +119,7 @@ Options:
   --help            Show this message and exit.
 ```
 
-Configs are described below. The `<INPUT_PATH>` should point to an OSM map dataset (`osm.xml` and `osm.pbf` are supported). The `<OUTPUT_PATH>` should point to an exiting or new output directory.
+Configs are described below. The `<INPUT_PATH>` should point to an OSM map dataset (`osm.xml` and `osm.pbf` are supported). The `<OUTPUT_NAME>` should be the desired name of the geojson output file i.e. `isle-of-man`.
 
 ### Using Docker
 #### Build the image
@@ -155,7 +155,7 @@ OSMOX features and associated configurations are described in the sections below
 
 ## Output
 
-After running `osmox run <CONFIG_PATH> <INPUT_PATH> <OUTPUT_PATH>` you should see something like the following (slowly if you are processing a large map) appear in your terminal:
+After running `osmox run <CONFIG_PATH> <INPUT_PATH> <OUTPUT_NAME>` you should see something like the following (slowly if you are processing a large map) appear in your terminal:
 
 ```{sh}
 Loading config from 'configs/config_NTS_UK.json'.
@@ -179,15 +179,15 @@ INFO:osmox.main: Assigning distances to nearest shop.
 Progress: |██████████████████████████████████████████████████| 100.0% Complete
 INFO:osmox.main: Assigning distances to nearest medical.
 Progress: |██████████████████████████████████████████████████| 100.0% Complete
-INFO:osmox.main: Writting objects to: suffolk2/epsg_27700.geojson
+INFO:osmox.main: Writting objects to: suffolk2/suffolk_epsg_27700.geojson
 INFO:osmox.main: Reprojecting output to epsg:4326 (lat lon)
-INFO:osmox.main: Writting objects to: suffolk2/epsg_4326.geojson
+INFO:osmox.main: Writting objects to: suffolk2/suffolk_epsg_4326.geojson
 INFO:osmox.main:Done.
 ```
 
-Once completed, you will find OSMOX has outputted file(s) in `geojson` format in the specified `<OUTPUT_PATH>`. If you have specified a CRS, you will find two output files, named as follows:
-1)  `<specified CRS name>.geojson`
-2)  `epsg_4326.geojson`
+Once completed, you will find OSMOX has outputted file(s) in `geojson` format in the same folder as the OSM input file. If you have specified a CRS, you will find two output files, named as follows:
+1)  `<OUTPUT_NAME>_<specified CRS name>.geojson`
+2)  `<OUTPUT_NAME>_epsg_4326.geojson`
 
 We generally refer to the outputs collectively as `facilities` and their properties as `features`. Note that each facility has a unique id, a number of features (depending on the configuration) and a point geometry. In the case of areas or polygons, such as buildings, the point represents the centroid.
 

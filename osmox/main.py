@@ -5,6 +5,7 @@ import click
 
 from osmox import config, build
 from osmox.helpers import PathPath
+from osmox.helpers import path_leaf
 
 default_config_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../configs/config.json")
@@ -12,9 +13,9 @@ default_config_path = os.path.abspath(
 default_input_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../tests/data/isle-of-man-latest.osm.pbf")
 )
-default_output_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../outputs/example.geojson")
-)
+#default_output_path = os.path.abspath(
+#    os.path.join(os.path.dirname(__file__), "../outputs/example.geojson")
+#)
 logger = logging.getLogger(__name__)
 
 
@@ -40,21 +41,21 @@ def validate(config_path):
 @osmox.command()
 @click.argument('config_path', type=PathPath(exists=True), nargs=1, required=True)
 @click.argument('input_path', type=PathPath(exists=True), nargs=1, required=True)
-@click.argument('output_path', type=PathPath(exists=False), nargs=1, required=True)
+@click.argument('output_name', nargs=1, required=True)
 @click.option("-crs", "--crs", type=str, default="epsg:27700",
               help="crs string eg (default): 'epsg:27700' (UK grid)")
 @click.option("-s", "--single_use", is_flag=True,
               help="split multi-activity facilities into multiple single-activity facilities")
 @click.option("-l", "--lazy", is_flag=True,
               help="if filtered object already has a label, do not search for more (supresses multi-use)")
-def run(config_path, input_path, output_path, crs, single_use, lazy):
+def run(config_path, input_path, output_name, crs, single_use, lazy):
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
 
-    if not os.path.exists(output_path):
-        logger.info(f'Creating output directory: {output_path}')
-        os.mkdir(output_path)
+    #if not os.path.exists(output_path):
+    #    logger.info(f'Creating output directory: {output_path}')
+    #    os.mkdir(output_path)
 
     logger.info(f"Creating handler with crs: {crs}.")
     if single_use:
@@ -103,7 +104,7 @@ def run(config_path, input_path, output_path, crs, single_use, lazy):
 
     gdf = handler.geodataframe(single_use=single_use)
 
-    path = output_path / f"{crs.replace(':', '_')}.geojson"
+    path = path_leaf(input_path) / f"{output_name}_{crs.replace(':', '_')}.geojson"
     logger.info(f" Writting objects to: {path}")
     with open(path, "w") as file:
         file.write(gdf.to_json())
@@ -111,7 +112,7 @@ def run(config_path, input_path, output_path, crs, single_use, lazy):
     if not crs == "epsg:4326":
         logger.info(" Reprojecting output to epsg:4326 (lat lon)")
         gdf.to_crs("epsg:4326", inplace=True)
-        path = output_path / "epsg_4326.geojson"
+        path = path_leaf(input_path) / f"{output_name}_epsg_4326.geojson"
         logger.info(f" Writting objects to: {path}")
         with open(path, "w") as file:
             file.write(gdf.to_json())
