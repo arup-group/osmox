@@ -196,4 +196,3 @@ def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
 def path_leaf(filepath):
     head, tail = ntpath.split(filepath)
     return Path(head) or ntpath.basename(head)
-    
