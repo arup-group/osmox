@@ -192,6 +192,8 @@ def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
     object.activities = list(required_acts)
     return object
 
+
 def path_leaf(filepath):
     head, tail = ntpath.split(filepath)
     return Path(head) or ntpath.basename(head)
+    

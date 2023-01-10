@@ -13,9 +13,7 @@ default_config_path = os.path.abspath(
 default_input_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../tests/data/isle-of-man-latest.osm.pbf")
 )
-#default_output_path = os.path.abspath(
-#    os.path.join(os.path.dirname(__file__), "../outputs/example.geojson")
-#)
+
 logger = logging.getLogger(__name__)
 
 
@@ -52,10 +50,6 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
-
-    #if not os.path.exists(output_path):
-    #    logger.info(f'Creating output directory: {output_path}')
-    #    os.mkdir(output_path)
 
     logger.info(f"Creating handler with crs: {crs}.")
     if single_use:
