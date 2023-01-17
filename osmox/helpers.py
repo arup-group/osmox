@@ -1,6 +1,5 @@
 import logging
 import click
-import ntpath
 from pathlib import Path
 from rtree import index
 from shapely.geometry import Polygon, Point
@@ -194,5 +193,5 @@ def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
 
 
 def path_leaf(filepath):
-    head, tail = ntpath.split(filepath)
-    return Path(head) or ntpath.basename(head)
+    folder_path = Path(filepath).parent
+    return folder_path
