@@ -190,3 +190,8 @@ def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
     object = build.Object(idx=idx, osm_tags=new_osm_tags, activity_tags=new_tags, geom=geom)
     object.activities = list(required_acts)
     return object
+
+
+def path_leaf(filepath):
+    folder_path = Path(filepath).parent
+    return folder_path
