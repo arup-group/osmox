@@ -22,15 +22,14 @@ jobs:
         export ACCEPT_EULA=Y
         sudo apt-get update
         python -m pip install --upgrade pip
-        sudo apt-get install -y python3-dev python3-pip python3-venv python3-wheel libgdal-dev locales
+        sudo apt-get install -y python3-dev python3-pip libgdal-dev locales
         sudo apt-get install -y libspatialindex-dev
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
         sudo apt-get install ca-certificates
         export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
         sudo apt-get install -y gcc build-essential
-        pip install wheel numpy cmake
-        pip install GDAL==3.6.3
+        pip install GDAL==3.0.2
         pip install -e .
     - name: Lint with flake8
       run: |
