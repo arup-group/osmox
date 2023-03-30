@@ -30,7 +30,7 @@ jobs:
         export C_INCLUDE_PATH=/usr/include/gdal
         sudo apt-get install ca-certificates
         export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-        pip install GDAL==3.5.2
+        pip install GDAL==3.2.0
         pip install -e .
     - name: Lint with flake8
       run: |
