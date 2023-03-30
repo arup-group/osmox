@@ -27,6 +27,7 @@ jobs:
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
         sudo apt-get install ca-certificates
+        sudo apt update gcc
         export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
         pip install wheel
         pip install cmake
