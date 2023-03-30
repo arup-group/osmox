@@ -8,5 +8,5 @@ pytest==6.2.4
 pytest-cov==2.8.1
 pytest-mock==3.1.0
 Rtree>=0.9.3
-setuptools>=42.0.1,<58.0.0
+setuptools>=42.0.1,<58.0.2
 Shapely==1.8.0
