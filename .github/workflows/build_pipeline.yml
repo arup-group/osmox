@@ -28,7 +28,7 @@ jobs:
         export C_INCLUDE_PATH=/usr/include/gdal
         sudo apt-get install ca-certificates
         export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-        sudo apt-get install -y gcc
+        sudo apt-get install -y gcc build-essential
         pip install wheel
         pip install cmake
         pip install GDAL==3.6.3
