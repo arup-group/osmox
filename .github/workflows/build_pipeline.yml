@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade pip
         sudo apt-get install -y python3-pip libgdal-dev locales
         sudo apt-get install -y libspatialindex-dev
-        python3 -m pip install --upgrade --no-cache-dir setuptools<58.0.0
+        python3 -m pip install --upgrade --no-cache-dir setuptools==57.5.0
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
         sudo apt-get install ca-certificates
