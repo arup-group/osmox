@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade pip
         sudo apt-get install -y python3-pip libgdal-dev locales cmake
         sudo apt-get install -y libspatialindex-dev
-        sudo apt-get install -y python3-dev build-essentials gcc
+        sudo apt-get install -y python3-dev build-essential gcc
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
         sudo apt-get install ca-certificates
