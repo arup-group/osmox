@@ -14,6 +14,6 @@ setup(
     description="A command line tool for processing osmfs into facility locations.",
     packages=find_packages(),
     install_requires=required,
-    python_requires='>=3.11',
+    python_requires='>=3.7',
     entry_points={"console_scripts": ["osmox = osmox.main:osmox"]},
 )

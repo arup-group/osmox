@@ -1,7 +1,7 @@
 # [v0.2.0]
 
 ## What's Changed
-Python 3.11 support by @val-ismaili in https://github.com/arup-group/osmox/pull/35
+Currently supports 3.7 & 3.11 - future development will support 3.11 by default by @val-ismaili in https://github.com/arup-group/osmox/pull/35
 
 # [v0.1.0]
 
