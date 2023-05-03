@@ -21,7 +21,9 @@ Once assembled, these form part of our wider pipeline. But as a standalone tool,
 
 ## Install
 
-Note: you can use the instructions [here](#using-docker) to build a Docker image for OSMOX and run it in a container if you cannot install it locally.
+OSMOX can be installed on both Python 3.7 and 3.11 environments.
+
+Note: you can use the instructions [here](#using-docker) to build a Docker image for OSMOX and run it in a container if you cannot install it locally. This builds in a Python 3.7 environment.
 
 I. Installation for Mac
 ```{sh}
@@ -39,7 +41,7 @@ It is recommended to use an Anaconda environment for installation on Windows:
 
 ```{sh}
 # Create a new environment in Anaconda
-conda create -n osmox python=3.7
+conda create -n osmox python=3.11
 conda activate osmox
 conda install geopandas
 
