@@ -1,16 +1,9 @@
-FROM python:3.7-slim-stretch
+FROM mambaorg/micromamba:1.4.3-bullseye-slim
+COPY --chown=$MAMBA_USER:$MAMBA_USER . .
+RUN micromamba install -y -n base -c conda-forge -c city-modelling-lab -f requirements/base.txt && \
+    micromamba clean --all --yes
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
-RUN apt-get update && \
-apt-get upgrade -y && \
-apt-get -y install libspatialindex-dev &&  \
-rm -rf /var/lib/apt/lists/*
+RUN pip install --no-deps -e .
 
-RUN /usr/local/bin/python -m pip install --no-cache-dir --compile --upgrade pip
-
-COPY ./scripts .
-COPY . .
-
-RUN pip3 install --no-cache-dir --compile -e . && pip cache purge
-ENV PYTHONPATH=./scripts:${PYTHONPATH}
-
-ENTRYPOINT ["osmox", "run"]
+ENTRYPOINT ["/usr/local/bin/_entrypoint.sh", "osmox", "run"]

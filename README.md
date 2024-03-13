@@ -21,41 +21,40 @@ Once assembled, these form part of our wider pipeline. But as a standalone tool,
 
 ## Install
 
-OSMOX can be installed on both Python 3.7 and 3.11 environments.
+OSMOX can be installed in Python environments from version 3.10 upwards.
 
-Note: you can use the instructions [here](#using-docker) to build a Docker image for OSMOX and run it in a container if you cannot install it locally. This builds in a Python 3.7 environment.
+Note: you can use the instructions [here](#using-docker) to build a Docker image for OSMOX and run it in a container if you cannot install it locally.
+This builds in a Python 3.12 environment.
 
-I. Installation for Mac
-```{sh}
+### As a Docker image
+
+```shell
 git clone git@github.com:arup-group/osmox.git
-pip install osmox
-# or pip -e install osmox
 cd osmox
-pytest
-osmox --help
+docker build -t "osmox" .
 ```
 
-II. Installation for Windows
+### As a Python package
 
-It is recommended to use an Anaconda environment for installation on Windows:
+To install osmox, we recommend using the [mamba](https://mamba.readthedocs.io/en/latest/index.html) package manager:
 
-```{sh}
-# Create a new environment in Anaconda
-conda create -n osmox python=3.11
-conda activate osmox
-conda install geopandas
-
-# Clone this repository locally
+``` shell
 git clone git@github.com:arup-group/osmox.git
-
-# Change directory
 cd osmox
-
-# Install the current directory in editable mode and test
-pip install -e .
-pytest
+mamba create -n osmox -c conda-forge -c city-modelling-lab --file requirements/base.txt
+mamba activate osmox
+pip install --no-deps .
 ```
 
+### Installing a development environment
+
+``` shell
+git clone git@github.com:arup-group/osmox.git
+cd osmox
+mamba create -n osmox -c conda-forge -c city-modelling-lab --file requirements/base.txt --file requirements/dev.txt
+mamba activate osmox
+pip install --no-deps -e .
+```
 
 ## Quick Start
 
@@ -208,7 +207,7 @@ We generally refer to the outputs collectively as `facilities` and their propert
         "distance_to_nearest_shop": 170.41317833861532,
         "distance_to_nearest_transit": 157.88388248911602,
         "units": 1
-        }, 
+        },
     "geometry": {
         "type": "Point",
         "coordinates": [613632.5100411727, 242323.73560476975]
@@ -416,4 +415,3 @@ Multiple groups can also be defined, for example:
 - add .shp option
 - add other distance or similar type features, eg count of nearest neighbours
 - warning or feedback when trying to process really large datasets
-

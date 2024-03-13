@@ -1,0 +1,43 @@
+name: Minimal CI
+
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - README.md
+      - CHANGELOG.md
+      - LICENSE
+      - CONTRIBUTING.md
+      - docs/**
+      - mkdocs.yml
+
+jobs:
+  test:
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@main
+    with:
+      os: ubuntu-latest
+      py3version: "12"
+      lint: false
+
+  aws-pre-check:
+    runs-on: ubuntu-latest
+    outputs:
+      aws-secrets-exist: ${{ steps.secret-checker.outputs.SECRETS_EXIST }}
+    steps:
+      - id: secret-checker
+        name: 'Check secret access for fast fail'
+        run: |
+          echo "SECRETS_EXIST=$AWS_SECRETS_EXIST" >> $GITHUB_OUTPUT
+          echo "SECRETS_EXIST=$AWS_SECRETS_EXIST" >> $GITHUB_STEP_SUMMARY
+        env:
+          AWS_SECRETS_EXIST: ${{ secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' && secrets.AWS_S3_CODE_BUCKET != '' }}
+
+  aws-upload:
+    needs: [test, aws-pre-check]
+    if: always() && needs.test.result == 'success' && needs.aws-pre-check.outputs.aws-secrets-exist == 'true'
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/aws-upload.yml@main
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_S3_CODE_BUCKET: ${{ secrets.AWS_S3_CODE_BUCKET }}
