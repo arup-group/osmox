@@ -1,59 +1,105 @@
-# Contributing
+# Contributing guidelines
 
-When it comes to planning in the built environment, we think transparency is critical. The shape and operations of our shared infrastructure and public spaces impacts individuals’ access to employment opportunities, education, social communities, clean air, and safe mobility options. 
-We think open source, agent based models are the future for transparent, granular city planning. To help make these models a little bit more realistic, we built OSMOX - a tool for extracting locations and features from OpenStreetMap (OSM) data.
+We're really glad you're reading this, because we need volunteer developers to help maintain this project.
 
-Thank you for considering contributing to OSMOX! We're really excited to hear your opinions on the project and any ideas you may have on how it can be better!
+Some of the resources to look at if you're interested in contributing:
 
-Please note we have a code of conduct. Please follow it in all your interactions with the project.
+* Look at open issues tagged with ["help wanted"](https://github.com/arup-group/osmox/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) and ["good first issue"](https://github.com/arup-group/osmox/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+* Look at the [contributing guide in our documentation](https://arup-group.github.io/osmox/contributing)
 
-## Ways to Contribute
+## Licensing
+By contributing to osmox, i.e. through opening a pull request, you represent that your contributions are your own original work and that you have the right to license them, and you agree that your contributions are licensed under the MIT license.
+## Reporting bugs and requesting features
 
-There are a number of ways you can contribute to the project. The major two are:
-- Submitting a GitHub issue. This could involve:
-    - Logging a bug or undesirable behaviour
-    - Recording area of possible improvement
-    - Requesting a change or addition of a new feature
-- Contributing code. Our work is never done, if you have an idea how you could make OSMOX better or if you think you could generalise it:
-    - You can outline the new feature or desired behaviour in a GitHub issue and send us an email on [citymodelling@arup.com](mailto:citymodelling@arup.com) 
-    to let us know you're willing to work on it. We may invite you for a brief rubber-ducking session to go through your idea in more detail. The aim is to mature your idea with one (or more) OSMOX developers and to flag any possible blocks or implementation issues to be aware of.
-    - Please follow advice below on Contributing Code, working in a branch and the Pull Request process.
-    - You may continue to, and are encouraged to, keep in touch and reach out to us throughout your development work.
+You can open an issue on GitHub to report bugs or request new osmox features.
+Follow these links to submit your issue:
 
-See this helpful site on [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/) for more ideas on how you could contribute. Get in touch with us via email [citymodelling@arup.com](mailto:citymodelling@arup.com).
+- [Report bugs or other problems while running osmox](https://github.com/arup-group/osmox/issues/new?template=BUG-REPORT.yml).
+If reporting an error, please include a full traceback in your issue.
 
-## Submitting Issues
+- [Request features that osmox does not already include](https://github.com/arup-group/osmox/issues/new?template=FEATURE-REQUEST.yml).
 
-If you have an idea for an enhancement, a change or addition of new feature or behaviour for OSMOX or a record of a bug you can communicate this to us in detail by sending us an email on [citymodelling@arup.com](mailto:citymodelling@arup.com) 
- 
-A good issue will outline the problem in a full written format. It is helpful to include screenshots, especially to highlight any physical issues with the network. It is also helpful to include why you think the new feature would be useful, what problem is it solving and whether there is a real-world cases study that would benefit from this 
-improvement.
+- [Report missing or inconsistent information in our documentation](https://github.com/arup-group/osmox/issues/new?template=DOCS.yml).
 
-In case of bugs, please provide the full error message, the OS and 
-information about the environment in which the process had been ran. It is also helpful to include a small 
-(if possible) set of data on which the problem can be recreated---at the very least, a thorough description of the input data should be included.
+- [Any other issue](https://github.com/arup-group/osmox/issues/new).
 
-## Contributing Code - Pull Request Process
+## Submitting changes
 
-To find beginner-friendly issues that you might want to take a run at, look [here](https://github.com/arup-group/osmox/contribute).
+Look at the [development guide in our documentation](https://arup-group.github.io/osmox/contributing) for information on how to get set up for development.
 
-1. All new work is done in a branch taken from master, details can be found here:
-[feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow)
-2. Ensure your work is covered by unit tests to the required percentage level. This script 
-[`scripts/code-coverage.sh`](https://github.com/arup-group/osmox/blob/master/scripts/code-coverage.sh)
- will help both in checking that the coverage level is satisfied and investigating places in code that have not been covered by the tests (via an output file `reports/coverage/index.html` which can be viewed in a browser).
-3. Provide [docstrings](https://www.python.org/dev/peps/pep-0257/) for new methods.
-4. Perform linting locally using ```flake8 . --max-line-length 120 --count  --show-source --statistics --exclude=scripts,tests```
-5. Add or update dependencies in `requirements.txt` if applicable.
-6. Ensure the CI build pipeline (Actions tab in GitHub) completes successfully for your branch. The pipeline performs automated `PEP8` checks and runs unit tests in a fresh environment, as well as installation of all dependencies.
-7. You may use example data already in `example_data` directory of this repo, or add more (small amount of) data to it to show off your new features.
-8. Add section in the `README.md` which shows usage of your new feature.
-9. Submit your Pull Request (see [GitHub Docs on Creating a Pull Request](https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request)),
- describing the feature, linking to any relevant GitHub issues and request review from at 
-least two developers. (Please take a look at latest commits to find out which developers you should request review from).
-10. You may merge the Pull Request in once you have the sign-off of two other developers, or if you 
-do not have permission to do that, please request one of the reviewers to merge it for you.
+<!--- the "--8<--" html comments define what part of this file to add to the index page of the documentation -->
+<!--- --8<-- [start:docs] -->
+
+To contribute changes:
+
+1. Fork the project on GitHub.
+2. Create a feature branch to work on in your fork (`git checkout -b new-fix-or-feature`).
+3. Test your changes using `pytest`.
+4. Commit your changes to the feature branch (you should have `pre-commit` installed to ensure your code is correctly formatted when you commit changes).
+5. Push the branch to GitHub (`git push origin new-fix-or-feature`).
+6. On GitHub, create a new [pull request](https://github.com/arup-group/osmox/pull/new/main) from the feature branch.
+
+### Pull requests
+
+Before submitting a pull request, check whether you have:
+
+* Added your changes to `CHANGELOG.md`.
+* Added or updated documentation for your changes.
+* Added tests if you implemented new functionality.
+
+When opening a pull request, please provide a clear summary of your changes!
+
+### Commit messages
+
+Please try to write clear commit messages. One-line messages are fine for small changes, but bigger changes should look like this:
+
+    A brief summary of the commit (max 50 characters)
+
+    A paragraph or bullet-point list describing what changed and its impact,
+    covering as many lines as needed.
+
+### Code conventions
+
+Start reading our code and you'll get the hang of it.
+
+We mostly follow the official [Style Guide for Python Code (PEP8)](https://www.python.org/dev/peps/pep-0008/).
+
+We have chosen to use the uncompromising code formatter [`black`](https://github.com/psf/black/) and the linter [`ruff`](https://beta.ruff.rs/docs/).
+When run from the root directory of this repo, `pyproject.toml` should ensure that formatting and linting fixes are in line with our custom preferences (e.g., 100 character maximum line length).
+The philosophy behind using `black` is to have uniform style throughout the project dictated by code.
+Since `black` is designed to minimise diffs, and make patches more human readable, this also makes code reviews more efficient.
+To make this a smooth experience, you should run `pre-commit install` after setting up your development environment, so that `black` makes all the necessary fixes to your code each time you commit, and so that `ruff` will highlight any errors in your code.
+If you prefer, you can also set up your IDE to run these two tools whenever you save your files, and to have `ruff` highlight erroneous code directly as you type.
+Take a look at their documentation for more information on configuring this.
+
+We require all new contributions to have docstrings for all modules, classes and methods.
+When adding docstrings, we request you use the [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings).
+
+## Release checklist
+
+### Pre-release
+
+- [ ] Make sure all unit and integration tests pass (This is best done by creating a pre-release pull request).
+- [ ] Re-run tutorial Jupyter notebooks (`pytest examples/ --overwrite`).
+- [ ] Make sure documentation builds without errors (`mike deploy [version]`, where `[version]` is the current minor release of the form `X.Y`).
+- [ ] Make sure the [changelog][changelog] is up-to-date, especially that new features and backward incompatible changes are clearly marked.
+
+### Create release
+
+- [ ] Bump the version number in `src/osmox/__init__.py`
+- [ ] Update the [changelog][changelog] with final version number of the form `vX.Y.Z`, release date, and [github `compare` link](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/viewing-and-comparing-commits/comparing-commits) (at the bottom of the page).
+- [ ] Commit with message `Release vX.Y.Z`, then add a `vX.Y.Z` tag.
+- [ ] Create a release pull request to verify that the conda package builds successfully.
+- [ ] Once the PR is approved and merged, create a release through the GitHub web interface, using the same tag, titling it `Release vX.Y.Z` and include all the changelog elements that are *not* flagged as **internal**.
+
+### Post-release
+
+- [ ] Update the changelog, adding a new `[Unreleased]` heading.
+- [ ] Update `src/osmox/__init__.py` to the next version appended with `.dev0`, in preparation for the next main commit.
+
+
+<!--- --8<-- [end:docs] -->
 
 ## Attribution
 
-The Contribution Guide was adapted from [PurpleBooth's Template](https://gist.github.com/PurpleBooth/b24679402957c63ec426).
+The layout and content of this document is partially based on the [Calliope project's contribution guidelines](https://github.com/calliope-project/calliope/blob/main/CONTRIBUTING.md).

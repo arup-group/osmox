@@ -1,0 +1,74 @@
+site_name: OSMOX
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - quick_start.md
+  - osmox_run.md
+  - config.md
+  - Contributing: contributing.md
+  - Changelog: CHANGELOG.md
+  - Reference:
+    - Command line interface: api/cli.md
+theme:
+  name: material
+  custom_dir: docs/overrides
+  features:
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+repo_url: https://github.com/arup-group/osmox/
+site_dir: .docs
+markdown_extensions:
+  - admonition
+  - attr_list
+  - mkdocs-click
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      clickable_checkbox: true
+  - toc:
+      permalink: "#"
+      toc_depth: 3
+hooks:
+  - docs/static/hooks.py
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_section_style: spacy
+            show_bases: true
+            filters:
+              - "!^_"
+            merge_init_into_class: true
+            show_if_no_docstring: true
+            signature_crossrefs: true
+            show_root_toc_entry: false
+            show_signature_annotations: false
+          paths: [src]
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://pandas.pydata.org/docs/objects.inv
+            - https://shapely.readthedocs.io/en/stable/objects.inv
+            - https://geopandas.org/en/stable/objects.inv
+watch:
+  - src/osmox
+extra_css:
+  - static/extras.css
+extra:
+  version:
+    provider: mike
