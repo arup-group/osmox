@@ -1,0 +1,37 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - CHANGELOG.md
+      - LICENSE
+      - CONTRIBUTING.md
+      - docs/**
+      - mkdocs.yml
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        py3version: ["10", "12"]
+      fail-fast: false
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@main
+    with:
+      os: ${{ matrix.os }}
+      py3version: ${{ matrix.py3version }}
+      lint: false
+      pytest_args: '--no-cov'  # ignore coverage
+      upload_to_codecov: false
+
+  test-coverage:
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@main
+    with:
+      os: ubuntu-latest
+      py3version: "12"
+      lint: false
+      pytest_args: 'tests/'  # ignore example notebooks
+      upload_to_codecov: true

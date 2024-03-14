@@ -1,7 +1,6 @@
 **/__pycache__
 **/.pytest_cache/
-.git
-*.md
-readme_fixtures
+**/.git
+**/reports
 .github/
 tests/

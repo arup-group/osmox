@@ -1,0 +1,115 @@
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+# opts:
+# `--strict-markers` - Raise error on unexpected pytest markers being used (add new markers to `markers` config)
+# `-n2` - parallelise over two threads (uses pytest-xdist)
+# `--cov --cov-report=xml --cov-config=pyproject.toml` - generate coverage report for tests (uses pytest-cov; call `--no-cov` in CLI to switch off; `--cov-config` include to avoid bug)
+addopts = "-rav --strict-markers -n2 --cov --cov-report=xml --cov-config=pyproject.toml"
+testpaths = ["tests"]
+# to mark a test, decorate it with `@pytest.mark.[marker-name]`
+markers = []
+filterwarnings = []
+
+[tool.coverage.run]
+branch = true
+source = ["src/"]
+
+[tool.coverage.report]
+fail_under = 62
+
+[tool.coverage.html]
+directory = "reports/coverage"
+
+[tool.coverage.xml]
+output = "reports/coverage/coverage.xml"
+
+[tool.black]
+line-length = 100
+skip-magic-trailing-comma = true
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "Q"]
+
+ignore = [
+    "E501", # line too long: Black will handle this.
+    "D1",   # Ignore missing docstrings in public functions/modules. There are just too many of them missing...
+]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [".*", "__pypackages__", "build", "dist", "venv", "reports/"]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore `E402` (import violations) and `F401` (unused imports) in all `__init__.py` files
+"__init__.py" = ["E402", "F401"]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.setuptools.packages.find]
+include = ["osmox*"]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# Add file globs from the source code directory if they include non-py files that should be packaged
+# E.g. "fixtures/**/*"
+osmox = []
+
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+classifiers = [
+        "Development Status :: 2 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3",
+    ]
+
+name = "osmox"
+authors = [
+    { name = "Fred Shone", email = "fred.shone@arup.com" },
+]
+maintainers = [
+    { name = "Michael Fitzmaurice", email = "michael.fitzmaurice@arup.com" },
+    { name = "Theodore Chatziioannou", email = "theodore.chatziioannou@arup.com" },
+    { name = "Val Ismaili", email = "62333033+val-ismaili@users.noreply.github.com" },
+    { name = "Bryn Pickering", email = "17178478+brynpickering@users.noreply.github.com" },
+]
+description = "A tool for extracting locations and features from OpenStreetMap (OSM) data."
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["osmox", "arup"]
+license = { text = "MIT" }
+dynamic = ["dependencies", "optional-dependencies", "version"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements/base.txt"] }
+version = { attr = "osmox.__version__" }
+[project.scripts]
+osmox="osmox.cli:cli"
+
+[tool.setuptools.dynamic.optional-dependencies]
+dev = { file = ["requirements/dev.txt"] }
+
+[project.urls]
+repository = "https://github.com/arup-group/osmox"
+documentation = "https://arup-group.github.io/osmox"
+changelog = "https://github.com/arup-group/osmox/blob/main/CHANGELOG.md"

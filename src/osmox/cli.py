@@ -17,15 +17,16 @@ default_input_path = os.path.abspath(
 logger = logging.getLogger(__name__)
 
 
+@click.version_option()
 @click.group()
-def osmox():
+def cli():
     """
-    Access cli.
+    OSMOX Command Line Tool.
     """
     pass
 
 
-@osmox.command()
+@cli.command()
 @click.argument("config_path", nargs=1, type=PathPath(exists=True), required=True)
 def validate(config_path):
     """
@@ -36,7 +37,7 @@ def validate(config_path):
     logger.warning("Done.")
 
 
-@osmox.command()
+@cli.command()
 @click.argument('config_path', type=PathPath(exists=True), nargs=1, required=True)
 @click.argument('input_path', type=PathPath(exists=True), nargs=1, required=True)
 @click.argument('output_name', nargs=1, required=True)
