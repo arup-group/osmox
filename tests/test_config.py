@@ -1,67 +1,44 @@
 import os
+
 import pytest
-from collections import defaultdict
 from osmox import config
 
-root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "fixtures")
-)
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), "fixtures"))
 test_config_path = os.path.join(root, "test_config.json")
 
 
 @pytest.fixture
 def valid_config():
     return {
-    "filter": {
-        "building": [
-            "house",
-            "yes"
+        "filter": {
+            "building": ["house", "yes"],
+            "public_transport": ["*"],
+            "highway": ["bus_stop"],
+        },
+        "object_features": ["units", "levels", "area", "floor_area"],
+        "distance_to_nearest": ["transit", "shop"],
+        "default_tags": [["building", "house"]],
+        "activity_mapping": {
+            "building": {"house": ["home"]},
+            "amenity": {
+                "pub": ["social", "work", "delivery"],
+                "fast_food": ["work", "delivery", "food_shop"],
+            },
+            "landuse": {"commercial": ["shop", "work", "delivery"], "residential": ["home"]},
+            "shop": {"*": ["shop", "work"]},
+            "public_transport": {"*": ["transit"]},
+            "highway": {"bus_stop": ["transit"]},
+        },
+        "fill_missing_activities": [
+            {
+                "area_tags": [["landuse", "residential"]],
+                "required_acts": ["home"],
+                "new_tags": [["building", "house"]],
+                "size": [10, 10],
+                "spacing": [25, 25],
+            }
         ],
-        "public_transport": ["*"],
-        "highway": ["bus_stop"]
-    },
-
-    "object_features": ["units", "levels", "area", "floor_area"],
-
-    "distance_to_nearest": ["transit", "shop"],
-
-    "default_tags": [["building", "house"]],
-
-    "activity_mapping": {
-        "building": {
-            "house": ["home"],
-        },
-        "amenity": {
-            "pub": ["social", "work", "delivery"],
-            "fast_food": ["work", "delivery", "food_shop"],
-        },
-        "landuse": {
-            "commercial": ["shop", "work", "delivery"],
-            "residential": ["home"],
-        },
-        "shop": {
-            "*": ["shop", "work"]
-        },
-        "public_transport": {
-            "*": ["transit"]
-        },
-        "highway": {
-            "bus_stop": ["transit"]
-        }
-    },
-
-    "fill_missing_activities":
-    [
-        {
-            "area_tags": [["landuse", "residential"]],
-            "required_acts": ["home"],
-            "new_tags": [["building", "house"]],
-            "size": [10, 10],
-            "spacing": [25, 25]
-        }
-    ],
-
-}
+    }
 
 
 def test_load_config():
@@ -78,23 +55,19 @@ def test_get_acts(valid_config):
         "work",
         "delivery",
         "food_shop",
-        "transit"
-        }
+        "transit",
+    }
 
 
 def test_get_tags(valid_config):
     assert config.get_tags(valid_config) == (
-        {
-            "building",
-            "public_transport",
-            "highway"
-        },
+        {"building", "public_transport", "highway"},
         {
             ("building", "house"),
             ("building", "yes"),
             ("public_transport", "*"),
-            ("highway", "bus_stop")
-        }
+            ("highway", "bus_stop"),
+        },
     )
 
 
@@ -136,5 +109,7 @@ def test_config_with_missing_fill_missing_activities_key_logging(caplog, valid_c
 def test_config_with_invalid_activity_for_fill_missing_activities_logging(caplog, valid_config):
     valid_config["fill_missing_activities"][0]["required_acts"].append("invalid_activity")
     config.validate_activity_config(valid_config)
-    assert "'Fill missing activities' group has a non-configured activity 'invalid_activity'" in caplog.text
-
+    assert (
+        "'Fill missing activities' group has a non-configured activity 'invalid_activity'"
+        in caplog.text
+    )

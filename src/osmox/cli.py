@@ -3,9 +3,8 @@ import os
 
 import click
 
-from osmox import config, build
-from osmox.helpers import PathPath
-from osmox.helpers import path_leaf
+from osmox import build, config
+from osmox.helpers import PathPath, path_leaf
 
 default_config_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../configs/config.json")
@@ -38,15 +37,28 @@ def validate(config_path):
 
 
 @cli.command()
-@click.argument('config_path', type=PathPath(exists=True), nargs=1, required=True)
-@click.argument('input_path', type=PathPath(exists=True), nargs=1, required=True)
-@click.argument('output_name', nargs=1, required=True)
-@click.option("-crs", "--crs", type=str, default="epsg:27700",
-              help="crs string eg (default): 'epsg:27700' (UK grid)")
-@click.option("-s", "--single_use", is_flag=True,
-              help="split multi-activity facilities into multiple single-activity facilities")
-@click.option("-l", "--lazy", is_flag=True,
-              help="if filtered object already has a label, do not search for more (supresses multi-use)")
+@click.argument("config_path", type=PathPath(exists=True), nargs=1, required=True)
+@click.argument("input_path", type=PathPath(exists=True), nargs=1, required=True)
+@click.argument("output_name", nargs=1, required=True)
+@click.option(
+    "-crs",
+    "--crs",
+    type=str,
+    default="epsg:27700",
+    help="crs string eg (default): 'epsg:27700' (UK grid)",
+)
+@click.option(
+    "-s",
+    "--single_use",
+    is_flag=True,
+    help="split multi-activity facilities into multiple single-activity facilities",
+)
+@click.option(
+    "-l",
+    "--lazy",
+    is_flag=True,
+    help="if filtered object already has a label, do not search for more (supresses multi-use)",
+)
 def run(config_path, input_path, output_name, crs, single_use, lazy):
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
@@ -58,13 +70,9 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
     if lazy:
         logger.info("Handler will be using lazy assignment, this may suppress some multi-use.")
 
-    handler = build.ObjectHandler(
-        config=cnfg,
-        crs=crs,
-        lazy=lazy
-        )
+    handler = build.ObjectHandler(config=cnfg, crs=crs, lazy=lazy)
     logger.info(f" Filtering all objects found in {input_path}. This may take a long while.")
-    handler.apply_file(str(input_path), locations=True, idx='flex_mem')
+    handler.apply_file(str(input_path), locations=True, idx="flex_mem")
     logger.info(f" Found {len(handler.objects)} buildings.")
     logger.info(f" Found {len(handler.points)} nodes with valid tags.")
     logger.info(f" Found {len(handler.areas)} areas with valid tags.")
@@ -84,7 +92,7 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
                 required_acts=group["required_acts"],
                 new_tags=group["new_tags"],
                 size=group["size"],
-                spacing=group["spacing"]
+                spacing=group["spacing"],
             )
             logger.info(f" Filled {zones} zones with {objects} objects.")
 
@@ -92,7 +100,7 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
         logger.info(f" Assigning object features: {cnfg['object_features']}.")
         handler.add_features()
 
-    if 'distance_to_nearest' in cnfg:
+    if "distance_to_nearest" in cnfg:
         for target_activity in cnfg["distance_to_nearest"]:
             logger.info(f" Assigning distances to nearest {target_activity}.")
             handler.assign_nearest_distance(target_activity)
