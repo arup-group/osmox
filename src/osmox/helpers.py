@@ -1,8 +1,10 @@
 import logging
-import click
 from pathlib import Path
+
+import click
 from rtree import index
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Point, Polygon
+
 from osmox import build
 
 logger = logging.getLogger(__name__)
@@ -10,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 class PathPath(click.Path):
     """A Click path argument that returns a pathlib Path, not a string"""
+
     def convert(self, value, param, ctx):
         return Path(super().convert(value, param, ctx))
 
@@ -52,7 +55,7 @@ def dict_list_match(d, dict_list):
     dict_list_match({1:4}, {1:[1,2,3]}) == False
     dict_list_match({2:1}, {1:[1,2,3]}) == False
     """
-    for k, v, in d.items():
+    for k, v in d.items():
         viable = dict_list.get(k, [])
         if v in viable or viable == "*":
             return True
@@ -82,7 +85,7 @@ def height_to_m(height):
         return imperial_to_metric(height)
 
     logger.warning(f"Unable to convert height {height} to metres, returning 3")
-    return 3.
+    return 3.0
 
 
 def is_string_float(number):
@@ -102,10 +105,10 @@ def imperial_to_metric(height):
     inches = float(height.split("'")[0].strip()) * 12
     if '"' in height:
         inches += float(height.split("'")[-1].replace('"', "").strip())
-    return round(inches/39.3701, 3)
+    return round(inches / 39.3701, 3)
 
 
-def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='|', printEnd="\r"):
+def progressBar(iterable, prefix="", suffix="", decimals=1, length=100, fill="|", printEnd="\r"):
     """
     from here: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     Call in a loop to create terminal progress bar
@@ -125,8 +128,9 @@ def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='|'
     def printProgressBar(iteration):
         percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
         filledLength = int(length * iteration // total)
-        bar = fill * filledLength + '-' * (length - filledLength)
-        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
+        bar = fill * filledLength + "-" * (length - filledLength)
+        print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=printEnd)
+
     # Initial Call
     printProgressBar(0)
     # Update Progress Bar
@@ -145,10 +149,7 @@ def get_distance(p):
 
     :return float: Distance in meters
     """
-    distance = (
-        (p[0].x - p[1].x)**2 +
-        (p[0].y - p[1].y)**2
-    ) ** 0.5
+    distance = ((p[0].x - p[1].x) ** 2 + (p[0].y - p[1].y) ** 2) ** 0.5
     return distance
 
 
@@ -185,7 +186,7 @@ def area_grid(area, spacing):
 def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
     dx, dy = size[0], size[1]
     x, y = point
-    geom = Polygon([(x, y), (x+dx, y), (x+dx, y+dy), (x, y+dy), (x, y)])
+    geom = Polygon([(x, y), (x + dx, y), (x + dx, y + dy), (x, y + dy), (x, y)])
     idx = f"fill_{i}"
     object = build.Object(idx=idx, osm_tags=new_osm_tags, activity_tags=new_tags, geom=geom)
     object.activities = list(required_acts)
