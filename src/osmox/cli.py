@@ -41,6 +41,13 @@ def validate(config_path):
 @click.argument("input_path", type=PathPath(exists=True), nargs=1, required=True)
 @click.argument("output_name", nargs=1, required=True)
 @click.option(
+    "-f",
+    "--format",
+    type=click.Choice(["geojson", "geopackage", "geoparquet"]),
+    default="geopackage",
+    help="Output file format (default: geopackage)",
+)
+@click.option(
     "-crs",
     "--crs",
     type=str,
@@ -59,7 +66,7 @@ def validate(config_path):
     is_flag=True,
     help="if filtered object already has a label, do not search for more (supresses multi-use)",
 )
-def run(config_path, input_path, output_name, crs, single_use, lazy):
+def run(config_path, input_path, output_name, format, crs, single_use, lazy):
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
@@ -107,17 +114,31 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
 
     gdf = handler.geodataframe(single_use=single_use)
 
-    path = path_leaf(input_path) / f"{output_name}_{crs.replace(':', '_')}.geojson"
-    logger.info(f" Writting objects to: {path}")
-    with open(path, "w") as file:
-        file.write(gdf.to_json())
+    if format == "geojson":
+        extension = "geojson"
+        driver = 'GeoJSON'
+        writer = gdf.to_file
+    elif format == "geopackage":
+        extension = "gpkg"
+        driver = 'GPKG'
+        writer = gdf.to_file
+    elif format == "geoparquet":
+        extension = "parquet"
+        writer = gdf.to_parquet
 
-    if not crs == "epsg:4326":
-        logger.info(" Reprojecting output to epsg:4326 (lat lon)")
-        gdf.to_crs("epsg:4326", inplace=True)
-        path = path_leaf(input_path) / f"{output_name}_epsg_4326.geojson"
-        logger.info(f" Writting objects to: {path}")
-        with open(path, "w") as file:
-            file.write(gdf.to_json())
+    logger.info(f" Writing objects to {format} format.")
+    output_filename = f"{output_name}_{crs.replace(':', '_')}.{extension}"
+
+    if format != "geoparquet":
+        writer(output_filename, driver=driver)
+    else:
+        writer(output_filename)
+
+    if not crs == "epsg:4326" and format != "geoparquet":
+        logger.info(" Reprojecting output to EPSG:4326 (lat lon)")
+        gdf.to_crs("epsg:4326").to_file(f"{output_name}_epsg_4326.{extension}", driver=driver)
+    elif not crs == "epsg:4326" and format == "geoparquet":
+        logger.info(" Reprojecting output to EPSG:4326 (lat lon)")
+        gdf.to_crs("epsg:4326").to_parquet(f"{output_name}_epsg_4326.parquet")
 
     logger.info("Done.")
