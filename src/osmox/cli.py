@@ -5,7 +5,7 @@ import click
 import pyproj
 
 from osmox import build, config
-from osmox.helpers import PathPath, path_leaf
+from osmox.helpers import PathPath
 
 default_config_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../configs/config.json")
@@ -117,15 +117,15 @@ def run(config_path, input_path, output_name, format, crs, single_use, lazy):
 
     if format == "geojson":
         extension = "geojson"
-        writer_method = 'to_file'
-        kwargs = {"driver": 'GeoJSON'}
+        writer_method = "to_file"
+        kwargs = {"driver": "GeoJSON"}
     elif format == "geopackage":
         extension = "gpkg"
-        writer_method = 'to_file'
-        kwargs = {"driver": 'GPKG'}
+        writer_method = "to_file"
+        kwargs = {"driver": "GPKG"}
     elif format == "geoparquet":
         extension = "parquet"
-        writer_method = 'to_parquet'
+        writer_method = "to_parquet"
         kwargs = {}
 
     logger.info(f" Writing objects to {format} format.")

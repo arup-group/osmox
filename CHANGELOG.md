@@ -23,9 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Recommended installation instructions changed from using `pip` to creating a `mamba` environment.
-- Supported and tested Python versions updated to py3.10 - py3.12.
-
+- Recommended installation instructions changed from using `pip` to creating a `mamba` environment [#38](https://github.com/arup-group/osmox/pull/38).
+- Supported and tested Python versions updated to py3.10 - py3.12 [#38](https://github.com/arup-group/osmox/pull/38).
+- Majority of documentation moved from README to dedicated documentation site: https://arup-group.github.io/osmox [#40](https://github.com/arup-group/osmox/pull/40).
 
 ## [v0.2.0]
 
