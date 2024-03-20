@@ -4,6 +4,7 @@ import traceback
 
 import pytest
 from click.testing import CliRunner
+
 from osmox import cli
 
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +22,7 @@ def config_path(fixtures_root):
 
 @pytest.fixture
 def toy_osm_path(fixtures_root):
-    return os.path.join(fixtures_root, "park.osm")
+    return os.path.join(fixtures_root, "toy.osm")
 
 
 @pytest.fixture
@@ -41,14 +42,14 @@ def test_cli_with_default_args(runner, config_path, toy_osm_path):
     result = runner.invoke(cli.run, [config_path, toy_osm_path, "output_test"])
 
     check_exit_code(result)
-    assert "geopackage" in result.exit_code
-    assert "epsg:4326" in result.exit_code
+    assert result.exit_code == 0
 
 
-def test_cli_output_formats(runner, config_path, toy_osm_path):
-    for output_format in ["geojson", "geopackage", "geoparquet"]:
-        result = runner.invoke(
-            cli.run,
-            [config_path, toy_osm_path, "output_test", "-f", output_format, "-crs", "epsg:4326"],
-        )
-        check_exit_code(result)
+@pytest.mark.parametrize("output_format", ["geojson", "geopackage", "geoparquet"])
+def test_cli_output_formats(runner, config_path, toy_osm_path, output_format):
+    result = runner.invoke(
+        cli.run,
+        [config_path, toy_osm_path, "output_test", "-f", output_format, "-crs", "epsg:4326"],
+    )
+    check_exit_code(result)
+    assert result.exit_code == 0
