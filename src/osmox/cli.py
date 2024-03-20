@@ -2,6 +2,7 @@ import logging
 import os
 
 import click
+import pyproj
 
 from osmox import build, config
 from osmox.helpers import PathPath, path_leaf
@@ -116,29 +117,25 @@ def run(config_path, input_path, output_name, format, crs, single_use, lazy):
 
     if format == "geojson":
         extension = "geojson"
-        driver = 'GeoJSON'
-        writer = gdf.to_file
+        writer_method = 'to_file'
+        kwargs = {"driver": 'GeoJSON'}
     elif format == "geopackage":
         extension = "gpkg"
-        driver = 'GPKG'
-        writer = gdf.to_file
+        writer_method = 'to_file'
+        kwargs = {"driver": 'GPKG'}
     elif format == "geoparquet":
         extension = "parquet"
-        writer = gdf.to_parquet
+        writer_method = 'to_parquet'
+        kwargs = {}
 
     logger.info(f" Writing objects to {format} format.")
     output_filename = f"{output_name}_{crs.replace(':', '_')}.{extension}"
 
-    if format != "geoparquet":
-        writer(output_filename, driver=driver)
-    else:
-        writer(output_filename)
+    getattr(gdf, writer_method)(output_filename, **kwargs)
 
-    if not crs == "epsg:4326" and format != "geoparquet":
-        logger.info(" Reprojecting output to EPSG:4326 (lat lon)")
-        gdf.to_crs("epsg:4326").to_file(f"{output_name}_epsg_4326.{extension}", driver=driver)
-    elif not crs == "epsg:4326" and format == "geoparquet":
-        logger.info(" Reprojecting output to EPSG:4326 (lat lon)")
-        gdf.to_crs("epsg:4326").to_parquet(f"{output_name}_epsg_4326.parquet")
+    if pyproj.CRS(crs) != pyproj.CRS("epsg:4326"):
+        logger.info(" Reprojecting additional output to EPSG:4326 (lat lon)")
+        gdf_4326 = gdf.to_crs("epsg:4326")
+        getattr(gdf_4326, writer_method)(f"{output_name}_epsg_4326.{extension}", **kwargs)
 
     logger.info("Done.")
