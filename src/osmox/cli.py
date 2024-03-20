@@ -108,7 +108,7 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
     gdf = handler.geodataframe(single_use=single_use)
 
     path = path_leaf(input_path) / f"{output_name}_{crs.replace(':', '_')}.geojson"
-    logger.info(f" Writting objects to: {path}")
+    logger.info(f" Writing objects to: {path}")
     with open(path, "w") as file:
         file.write(gdf.to_json())
 
@@ -116,7 +116,7 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
         logger.info(" Reprojecting output to epsg:4326 (lat lon)")
         gdf.to_crs("epsg:4326", inplace=True)
         path = path_leaf(input_path) / f"{output_name}_epsg_4326.geojson"
-        logger.info(f" Writting objects to: {path}")
+        logger.info(f" Writing objects to: {path}")
         with open(path, "w") as file:
             file.write(gdf.to_json())
 
