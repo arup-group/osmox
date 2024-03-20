@@ -5,6 +5,7 @@ mkdocs-material >= 9.4, < 10
 mkdocs-click < 0.7
 mkdocstrings-python < 2
 pre-commit < 4
+pyarrow >= 15.0.2
 pytest >= 8, < 9
 pytest-cov < 5
 pytest-mock < 4
