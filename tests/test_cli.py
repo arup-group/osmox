@@ -1,6 +1,7 @@
 import logging
 import os
 import traceback
+from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
@@ -34,6 +35,16 @@ def runner():
     return CliRunner()
 
 
+@pytest.fixture
+def default_output_file_ending():
+    return "_epsg_4326.gpkg"
+
+
+@pytest.fixture
+def default_output_file_path(path_output_dir, default_output_file_ending):
+    return Path(path_output_dir + default_output_file_ending)
+
+
 def check_exit_code(result):
     "Print full traceback if the CLI runner failed"
     if result.exit_code != 0:
@@ -41,12 +52,15 @@ def check_exit_code(result):
     assert result.exit_code == 0
 
 
-def test_cli_with_default_args(runner, config_path, toy_osm_path, path_output_dir):
+def test_cli_with_default_args(
+    runner, config_path, toy_osm_path, path_output_dir, default_output_file_path
+):
     # Test the command with minimal arguments
     result = runner.invoke(cli.run, [config_path, toy_osm_path, path_output_dir])
 
     check_exit_code(result)
     assert result.exit_code == 0
+    assert default_output_file_path.exists()
 
 
 @pytest.mark.parametrize("output_format", ["geojson", "geopackage", "geoparquet"])
@@ -57,3 +71,18 @@ def test_cli_output_formats(runner, config_path, toy_osm_path, path_output_dir, 
     )
     check_exit_code(result)
     assert result.exit_code == 0
+
+
+@pytest.mark.parametrize("crs", ["epsg:27700"])
+def test_cli_output_crs(
+    runner, config_path, toy_osm_path, path_output_dir, crs, default_output_file_path
+):
+    result = runner.invoke(cli.run, [config_path, toy_osm_path, path_output_dir, "-crs", crs])
+    check_exit_code(result)
+    assert result.exit_code == 0
+
+    # test that file with default crs is still produced
+    assert default_output_file_path.exists()
+
+    out_path = Path(path_output_dir + "_epsg_27700.gpkg")
+    assert out_path.exists()
