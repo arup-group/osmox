@@ -1,6 +1,7 @@
 import pytest
-from osmox import helpers
 from shapely.geometry import Polygon
+
+from osmox import helpers
 
 
 @pytest.mark.parametrize(

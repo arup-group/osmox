@@ -1,7 +1,8 @@
 import os
 
-from osmox import build, helpers
 from shapely.geometry import Point, Polygon
+
+from osmox import build, helpers
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
 test_osm_path = os.path.join(root, "isle-of-man-latest.osm.pbf")
