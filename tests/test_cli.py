@@ -9,6 +9,8 @@ from osmox import cli
 
 logging.basicConfig(level=logging.INFO)
 
+MAP_EXTENSIONS = {"geopackage": ".gpkg", "geojson": ".geojson", "geoparquet": ".parquet"}
+
 
 @pytest.fixture
 def fixtures_root():
@@ -59,18 +61,20 @@ def test_cli_with_default_args(
     result = runner.invoke(cli.run, [config_path, toy_osm_path, path_output_dir])
 
     check_exit_code(result)
-    assert result.exit_code == 0
     assert default_output_file_path.exists()
 
 
 @pytest.mark.parametrize("output_format", ["geojson", "geopackage", "geoparquet"])
-def test_cli_output_formats(runner, config_path, toy_osm_path, path_output_dir, output_format):
+def test_cli_output_formats(
+    runner, config_path, toy_osm_path, path_output_dir, default_output_file_path, output_format
+):
     result = runner.invoke(
         cli.run,
         [config_path, toy_osm_path, path_output_dir, "-f", output_format, "-crs", "epsg:4326"],
     )
     check_exit_code(result)
-    assert result.exit_code == 0
+
+    assert default_output_file_path.with_suffix(MAP_EXTENSIONS[output_format]).exists()
 
 
 @pytest.mark.parametrize("crs", ["epsg:27700"])
@@ -79,7 +83,6 @@ def test_cli_output_crs(
 ):
     result = runner.invoke(cli.run, [config_path, toy_osm_path, path_output_dir, "-crs", crs])
     check_exit_code(result)
-    assert result.exit_code == 0
 
     # test that file with default crs is still produced
     assert default_output_file_path.exists()
