@@ -4,7 +4,6 @@ import traceback
 
 import pytest
 from click.testing import CliRunner
-
 from osmox import cli
 
 logging.basicConfig(level=logging.INFO)

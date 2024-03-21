@@ -1,9 +1,8 @@
 import os
 
 import pytest
-from shapely.geometry import Point, Polygon
-
 from osmox import build, config, helpers
+from shapely.geometry import Point, Polygon
 
 fixtures_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "fixtures"))
 toy_osm_path = os.path.join(fixtures_root, "toy.osm")
