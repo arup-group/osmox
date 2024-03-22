@@ -43,7 +43,7 @@ This can make simple mapping of outputs quite complex, as there are many possibl
 To work around this problem, the optional flag `-s` or `--single_use` may be set to instead output unique objects for each activity.
 For example, for the above case, extracting two identical buildings, one with `activity: "eating"` and the other with `activity: "shopping"`.
 
-Writing to multiple file formats is supported. The default is geopackage (`.gpkg`), with additional support for `.geojson` and `.parquet`.
+Writing to multiple file formats is supported. The default is geopackage (`.gpkg`), with additional support for GeoJSON (`.geojson`) and geoparquet (`.parquet`).
 
 ## Output
 
