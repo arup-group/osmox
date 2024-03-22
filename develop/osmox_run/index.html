@@ -732,17 +732,17 @@
 Available options are detailed in on our <a href="../api/cli/">Command Line Interface reference page</a>.</p>
 <p>Configuration options are described in a <a href="../config/">separate page</a>.
 The <code>&lt;INPUT_PATH&gt;</code> should point to an OSM map dataset (<code>osm.xml</code> and <code>osm.pbf</code> are supported).
-The <code>&lt;OUTPUT_NAME&gt;</code> should be the desired name of the geojson output file i.e. <code>isle-of-man</code>.</p>
+The <code>&lt;OUTPUT_NAME&gt;</code> should be the desired name of the geopackage output file i.e. <code>isle-of-man</code>.</p>
 <h2 id="using-docker">Using Docker<a class="headerlink" href="#using-docker" title="Permanent link">#</a></h2>
 <h3 id="build-the-image">Build the image<a class="headerlink" href="#build-the-image" title="Permanent link">#</a></h3>
 <div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;osmox&quot;</span><span class="w"> </span>.
 </span></code></pre></div>
 <h3 id="running-osmox-in-a-container">Running OSMOX in a container<a class="headerlink" href="#running-osmox-in-a-container" title="Permanent link">#</a></h3>
 <p>Once you have built the image, the only thing you need to do is add the path to the folder where your inputs are stored to the command, in order to mount that folder (i.e. give the container access to the data in this folder):</p>
-<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>DATA_FOLDER_PATH:/MOUNT_PATH<span class="w"> </span>osmox<span class="w"> </span>CONFIG_PATH<span class="w"> </span>INPUT_PATH<span class="w"> </span>OUTPUT_NAME<span class="w"> </span>-crs<span class="w"> </span>epsg:27700<span class="w"> </span>-l
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>DATA_FOLDER_PATH:/MOUNT_PATH<span class="w"> </span>osmox<span class="w"> </span>CONFIG_PATH<span class="w"> </span>INPUT_PATH<span class="w"> </span>OUTPUT_NAME<span class="w"> </span>-f<span class="w"> </span>geopackage<span class="w"> </span>-crs<span class="w"> </span>epsg:27700<span class="w"> </span>-l
 </span></code></pre></div>
 <p>For example, if your input data and config is stored on your machine in <code>/Users/user_1/mydata</code>, and this is also the directory where you wish to place the outputs:</p>
-<div class="language-shell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>/Users/user_1/mydata:/mnt/mydata<span class="w"> </span>osmox<span class="w"> </span>/mnt/mydata/example_config.json<span class="w"> </span>/mnt/mydata/isle-of-man-latest.osm.pbf<span class="w"> </span>isle-of-man<span class="w"> </span>-crs<span class="w"> </span>epsg:27700<span class="w"> </span>-l
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>/Users/user_1/mydata:/mnt/mydata<span class="w"> </span>osmox<span class="w"> </span>/mnt/mydata/example_config.json<span class="w"> </span>/mnt/mydata/isle-of-man-latest.osm.pbf<span class="w"> </span>example/isle-of-man<span class="w"> </span>-f<span class="w"> </span>geopackage<span class="w"> </span>-crs<span class="w"> </span>epsg:27700<span class="w"> </span>-l
 </span></code></pre></div>
 <h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">#</a></h2>
 <p>The most common option you will need to use is <code>crs</code>.
@@ -754,6 +754,7 @@ For example, a building that contains both a restaurant and a shop can be labell
 This can make simple mapping of outputs quite complex, as there are many possible combinations of joined use.
 To work around this problem, the optional flag <code>-s</code> or <code>--single_use</code> may be set to instead output unique objects for each activity.
 For example, for the above case, extracting two identical buildings, one with <code>activity: "eating"</code> and the other with <code>activity: "shopping"</code>.</p>
+<p>Writing to multiple file formats is supported. The default is geopackage (<code>.gpkg</code>), with additional support for GeoJSON (<code>.geojson</code>) and geoparquet (<code>.parquet</code>).</p>
 <h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">#</a></h2>
 <p>After running <code>osmox run &lt;CONFIG_PATH&gt; &lt;INPUT_PATH&gt; &lt;OUTPUT_NAME&gt;</code> you should see something like the following (slowly if you are processing a large map) appear in your terminal:</p>
 <div class="language-shell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Loading<span class="w"> </span>config<span class="w"> </span>from<span class="w"> </span><span class="s1">&#39;configs/config_NTS_UK.json&#39;</span>.
@@ -777,20 +778,21 @@ For example, for the above case, extracting two identical buildings, one with <c
 </span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>Progress:<span class="w"> </span><span class="p">|</span>██████████████████████████████████████████████████<span class="p">|</span><span class="w"> </span><span class="m">100</span>.0%<span class="w"> </span>Complete
 </span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>INFO:osmox.main:<span class="w"> </span>Assigning<span class="w"> </span>distances<span class="w"> </span>to<span class="w"> </span>nearest<span class="w"> </span>medical.
 </span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>Progress:<span class="w"> </span><span class="p">|</span>██████████████████████████████████████████████████<span class="p">|</span><span class="w"> </span><span class="m">100</span>.0%<span class="w"> </span>Complete
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>INFO:osmox.main:<span class="w"> </span>Writing<span class="w"> </span>objects<span class="w"> </span>to:<span class="w"> </span>suffolk2/suffolk_epsg_27700.geojson
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>INFO:osmox.main:<span class="w"> </span>Writing<span class="w"> </span>objects<span class="w"> </span>to:<span class="w"> </span>suffolk2/suffolk_epsg_27700.gpkg
 </span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>INFO:osmox.main:<span class="w"> </span>Reprojecting<span class="w"> </span>output<span class="w"> </span>to<span class="w"> </span>epsg:4326<span class="w"> </span><span class="o">(</span>lat<span class="w"> </span>lon<span class="o">)</span>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>INFO:osmox.main:<span class="w"> </span>Writing<span class="w"> </span>objects<span class="w"> </span>to:<span class="w"> </span>suffolk2/suffolk_epsg_4326.geojson
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>INFO:osmox.main:<span class="w"> </span>Writing<span class="w"> </span>objects<span class="w"> </span>to:<span class="w"> </span>suffolk2/suffolk_epsg_4326.gpkg
 </span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>INFO:osmox.main:Done.
 </span></code></pre></div>
-<p>Once completed, you will find OSMOX has output file(s) in <code>geojson</code> format in the same folder as the OSM input file.
+<p>Once completed, you will find OSMOX has output file(s) in <code>.gpkg</code> format in the same folder as the OSM input file.
 If you have specified a CRS, you will find two output files, named as follows:</p>
 <ol>
-<li><code>&lt;OUTPUT_NAME&gt;_&lt;specified CRS name&gt;.geojson</code></li>
-<li><code>&lt;OUTPUT_NAME&gt;_epsg_4326.geojson</code></li>
+<li><code>&lt;OUTPUT_NAME&gt;_&lt;specified CRS name&gt;.gpkg</code></li>
+<li><code>&lt;OUTPUT_NAME&gt;_epsg_4326.gpkg</code></li>
 </ol>
 <p>We generally refer to the outputs collectively as <code>facilities</code> and their properties as <code>features</code>.
 Note that each facility has a unique id, a number of features (depending on the configuration) and a point geometry.
 In the case of areas or polygons, such as buildings, the point represents the centroid.</p>
+<p>If we had saved the oputput to GeoJSON - a plain text format - it would look like this on inspection:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;32653&quot;</span><span class="p">,</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
