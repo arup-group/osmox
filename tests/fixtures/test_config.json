@@ -37,7 +37,9 @@
         ]
     },
 
-    "object_features": ["units", "transit_distance", "levels", "area", "floor_area"],
+    "object_features": ["units", "levels", "area", "floor_area"],
+
+    "distance_to_nearest": ["transit"],
 
     "default_tags": [["building", "residential"]],
 

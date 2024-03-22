@@ -2,9 +2,10 @@ import logging
 import os
 
 import click
+import pyproj
 
 from osmox import build, config
-from osmox.helpers import PathPath, path_leaf
+from osmox.helpers import PathPath
 
 default_config_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../configs/config.json")
@@ -41,6 +42,13 @@ def validate(config_path):
 @click.argument("input_path", type=PathPath(exists=True), nargs=1, required=True)
 @click.argument("output_name", nargs=1, required=True)
 @click.option(
+    "-f",
+    "--format",
+    type=click.Choice(["geojson", "geopackage", "geoparquet"]),
+    default="geopackage",
+    help="Output file format (default: geopackage)",
+)
+@click.option(
     "-crs",
     "--crs",
     type=str,
@@ -59,7 +67,7 @@ def validate(config_path):
     is_flag=True,
     help="if filtered object already has a label, do not search for more (supresses multi-use)",
 )
-def run(config_path, input_path, output_name, crs, single_use, lazy):
+def run(config_path, input_path, output_name, format, crs, single_use, lazy):
     logger.info(f" Loading config from {config_path}")
     cnfg = config.load(config_path)
     config.validate_activity_config(cnfg)
@@ -107,17 +115,27 @@ def run(config_path, input_path, output_name, crs, single_use, lazy):
 
     gdf = handler.geodataframe(single_use=single_use)
 
-    path = path_leaf(input_path) / f"{output_name}_{crs.replace(':', '_')}.geojson"
-    logger.info(f" Writing objects to: {path}")
-    with open(path, "w") as file:
-        file.write(gdf.to_json())
+    if format == "geojson":
+        extension = "geojson"
+        writer_method = "to_file"
+        kwargs = {"driver": "GeoJSON"}
+    elif format == "geopackage":
+        extension = "gpkg"
+        writer_method = "to_file"
+        kwargs = {"driver": "GPKG"}
+    elif format == "geoparquet":
+        extension = "parquet"
+        writer_method = "to_parquet"
+        kwargs = {}
 
-    if not crs == "epsg:4326":
-        logger.info(" Reprojecting output to epsg:4326 (lat lon)")
-        gdf.to_crs("epsg:4326", inplace=True)
-        path = path_leaf(input_path) / f"{output_name}_epsg_4326.geojson"
-        logger.info(f" Writing objects to: {path}")
-        with open(path, "w") as file:
-            file.write(gdf.to_json())
+    logger.info(f" Writing objects to {format} format.")
+    output_filename = f"{output_name}_{crs.replace(':', '_')}.{extension}"
+
+    getattr(gdf, writer_method)(output_filename, **kwargs)
+
+    if pyproj.CRS(crs) != pyproj.CRS("epsg:4326"):
+        logger.info(" Reprojecting additional output to EPSG:4326 (lat lon)")
+        gdf_4326 = gdf.to_crs("epsg:4326")
+        getattr(gdf_4326, writer_method)(f"{output_name}_epsg_4326.{extension}", **kwargs)
 
     logger.info("Done.")
