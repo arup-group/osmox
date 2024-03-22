@@ -6,7 +6,7 @@ Available options are detailed in on our [Command Line Interface reference page]
 
 Configuration options are described in a [separate page](config.md).
 The `<INPUT_PATH>` should point to an OSM map dataset (`osm.xml` and `osm.pbf` are supported).
-The `<OUTPUT_NAME>` should be the desired name of the geojson output file i.e. `isle-of-man`.
+The `<OUTPUT_NAME>` should be the desired name of the geopackage output file i.e. `isle-of-man`.
 
 ## Using Docker
 
