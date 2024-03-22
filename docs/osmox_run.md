@@ -87,6 +87,8 @@ We generally refer to the outputs collectively as `facilities` and their propert
 Note that each facility has a unique id, a number of features (depending on the configuration) and a point geometry.
 In the case of areas or polygons, such as buildings, the point represents the centroid.
 
+If we had saved the oputput to GeoJSON - a plain text format - it would look like this on inspection:
+
 ```json
 {
     "id": "32653",
