@@ -27,7 +27,7 @@ docker run -v DATA_FOLDER_PATH:/MOUNT_PATH osmox CONFIG_PATH INPUT_PATH OUTPUT_N
 For example, if your input data and config is stored on your machine in `/Users/user_1/mydata`, and this is also the directory where you wish to place the outputs:
 
 ```shell
-docker run -v /Users/user_1/mydata:/mnt/mydata osmox /mnt/mydata/example_config.json /mnt/mydata/isle-of-man-latest.osm.pbf isle-of-man -f geopackage -crs epsg:27700 -l
+docker run -v /Users/user_1/mydata:/mnt/mydata osmox /mnt/mydata/example_config.json /mnt/mydata/isle-of-man-latest.osm.pbf example/isle-of-man -f geopackage -crs epsg:27700 -l
 ```
 
 ## Options

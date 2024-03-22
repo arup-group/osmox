@@ -6,7 +6,7 @@ First download `isle-of-man-latest.osm.pbf` from [geofabrik](https://download.ge
 Then run:
 
 ```sh
-osmox run configs/example.json example/isle-of-man-latest.osm.pbf isle-of-man -f geopackage -crs epsg:27700 -l
+osmox run configs/example.json example/isle-of-man-latest.osm.pbf example/isle-of-man -f geopackage -crs epsg:27700 -l
 ```
 
 After about 30 seconds, you should find the outputs in `.gpkg` format in the same `example` directory as your OSM input file.
