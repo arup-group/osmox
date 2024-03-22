@@ -14,7 +14,7 @@ The geopackage file contains locations for the extracted facilities, and each fa
 
 `-l` is short for `--lazy` which helps osmox run a little faster.
 
-If we had saved the oputput to GeoJSON - a plain text format - it would look like this on inspection:
+If we had saved the output to GeoJSON - a plain text format - it would look like this on inspection:
 
 ```json
 {

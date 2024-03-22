@@ -77,7 +77,7 @@ INFO:osmox.main: Writing objects to: suffolk2/suffolk_epsg_4326.gpkg
 INFO:osmox.main:Done.
 ```
 
-Once completed, you will find OSMOX has output file(s) in `geojson` format in the same folder as the OSM input file.
+Once completed, you will find OSMOX has output file(s) in `.gpkg` format in the same folder as the OSM input file.
 If you have specified a CRS, you will find two output files, named as follows:
 
 1. `<OUTPUT_NAME>_<specified CRS name>.gpkg`
