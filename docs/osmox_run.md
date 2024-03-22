@@ -21,13 +21,13 @@ docker build -t "osmox" .
 Once you have built the image, the only thing you need to do is add the path to the folder where your inputs are stored to the command, in order to mount that folder (i.e. give the container access to the data in this folder):
 
 ```shell
-docker run -v DATA_FOLDER_PATH:/MOUNT_PATH osmox CONFIG_PATH INPUT_PATH OUTPUT_NAME -crs epsg:27700 -l
+docker run -v DATA_FOLDER_PATH:/MOUNT_PATH osmox CONFIG_PATH INPUT_PATH OUTPUT_NAME -f geopackage -crs epsg:27700 -l
 ```
 
 For example, if your input data and config is stored on your machine in `/Users/user_1/mydata`, and this is also the directory where you wish to place the outputs:
 
 ```shell
-docker run -v /Users/user_1/mydata:/mnt/mydata osmox /mnt/mydata/example_config.json /mnt/mydata/isle-of-man-latest.osm.pbf isle-of-man -crs epsg:27700 -l
+docker run -v /Users/user_1/mydata:/mnt/mydata osmox /mnt/mydata/example_config.json /mnt/mydata/isle-of-man-latest.osm.pbf isle-of-man -f geopackage -crs epsg:27700 -l
 ```
 
 ## Options
@@ -42,6 +42,8 @@ For example, a building that contains both a restaurant and a shop can be labell
 This can make simple mapping of outputs quite complex, as there are many possible combinations of joined use.
 To work around this problem, the optional flag `-s` or `--single_use` may be set to instead output unique objects for each activity.
 For example, for the above case, extracting two identical buildings, one with `activity: "eating"` and the other with `activity: "shopping"`.
+
+Writing to multiple file formats is supported. The default is geopackage (`.gpkg`), with additional support for `.geojson` and `.parquet`.
 
 ## Output
 
@@ -69,17 +71,17 @@ INFO:osmox.main: Assigning distances to nearest shop.
 Progress: |██████████████████████████████████████████████████| 100.0% Complete
 INFO:osmox.main: Assigning distances to nearest medical.
 Progress: |██████████████████████████████████████████████████| 100.0% Complete
-INFO:osmox.main: Writing objects to: suffolk2/suffolk_epsg_27700.geojson
+INFO:osmox.main: Writing objects to: suffolk2/suffolk_epsg_27700.gpkg
 INFO:osmox.main: Reprojecting output to epsg:4326 (lat lon)
-INFO:osmox.main: Writing objects to: suffolk2/suffolk_epsg_4326.geojson
+INFO:osmox.main: Writing objects to: suffolk2/suffolk_epsg_4326.gpkg
 INFO:osmox.main:Done.
 ```
 
 Once completed, you will find OSMOX has output file(s) in `geojson` format in the same folder as the OSM input file.
 If you have specified a CRS, you will find two output files, named as follows:
 
-1. `<OUTPUT_NAME>_<specified CRS name>.geojson`
-2. `<OUTPUT_NAME>_epsg_4326.geojson`
+1. `<OUTPUT_NAME>_<specified CRS name>.gpkg`
+2. `<OUTPUT_NAME>_epsg_4326.gpkg`
 
 We generally refer to the outputs collectively as `facilities` and their properties as `features`.
 Note that each facility has a unique id, a number of features (depending on the configuration) and a point geometry.

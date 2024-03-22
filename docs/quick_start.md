@@ -6,11 +6,11 @@ First download `isle-of-man-latest.osm.pbf` from [geofabrik](https://download.ge
 Then run:
 
 ```sh
-osmox run configs/example.json example/isle-of-man-latest.osm.pbf isle-of-man -crs epsg:27700 -l
+osmox run configs/example.json example/isle-of-man-latest.osm.pbf isle-of-man -f geopackage -crs epsg:27700 -l
 ```
 
-After about 30 seconds, you should find the outputs in geojson format in the same `example` directory as your OSM input file.
-The geojson file contains locations for the extracted facilities, and each facility includes a number of features with coordinates given in WGS-84 (EPSG:4326) coordinate reference system (CRS), so that they can be quickly inspected using [geopandas](https://geopandas.org/en/stable) or equivalent.
+After about 30 seconds, you should find the outputs in `.gpkg` format in the same `example` directory as your OSM input file.
+The geopackage file contains locations for the extracted facilities, and each facility includes a number of features with point geometry in the specified crs. If the user specifies a crs other than WGS-84 (EPSG:4326) coordinate reference system (CRS), OSMOX will write an additional file in WGS-84 (EPSG:4326) so that this can be quickly inspected.
 
 `-l` is short for `--lazy` which helps osmox run a little faster.
 
