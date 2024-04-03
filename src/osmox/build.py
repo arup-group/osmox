@@ -1,5 +1,6 @@
 import logging
 from collections import namedtuple
+from typing import Literal, Optional
 
 import geopandas as gp
 import osmium
@@ -356,12 +357,14 @@ class ObjectHandler(osmium.SimpleHandler):
 
     def fill_missing_activities(
         self,
-        area_tags=("landuse", "residential"),
-        required_acts="home",
-        new_tags=("building", "house"),
-        size=(10, 10),
-        spacing=(25, 25),
-    ):
+        area_tags: tuple = ("landuse", "residential"),
+        required_acts: str = "home",
+        new_tags: tuple = ("building", "house"),
+        size: tuple[int, int] = (10, 10),
+        fill_method: Literal["spacing", "point_source"] = "spacing",
+        point_source: Optional[str] = None,
+        spacing: Optional[tuple[int, int]] = (25, 25),
+    ) -> tuple[int, int]:
         """
         Fill "empty" areas with new objects. Empty areas are defined as areas with the select_tags but
         not containing any objects of the required_acts.
@@ -373,8 +376,8 @@ class ObjectHandler(osmium.SimpleHandler):
         :param required_acts: Optional string value representing expected (any) object activity types to be found in
         areas.Defaults to "home"
         :param new_tags: Optional tuple of tags for new objects. Defaults to ("building", "house").
-        :param size:  Optional tuple of x,y dimensions of new object polygon. Defaults to (10, 10)
-        :param spacing:  Optional tuple of x,y dimensions of new objects spacing. Defaults to (25, 25)
+        :param size:  Optional tuple of x,y dimensions of new object polygon (i.e. building footprint). Defaults to (10, 10)
+        :param spacing:  Optional tuple of x,y dimensions of new objects centre-point spacing. Defaults to (25, 25)
 
         :returns: A tuple of two ints representing number of empty zones, number of new objects
         """
@@ -383,6 +386,13 @@ class ObjectHandler(osmium.SimpleHandler):
         i = 0  # counter for object id
         new_osm_tags = [OSMTag(key=k, value=v) for k, v in area_tags]
         new_tags = [OSMTag(key=k, value=v) for k, v in new_tags]
+
+        if fill_method == "point_source":
+            if point_source is None:
+                raise ValueError(
+                    "Missing activity fill method expects a path to a point source geospatial data file, received None"
+                )
+            gdf_point_source = helpers.read_geofile(point_source)
 
         for area in helpers.progressBar(
             self.areas, prefix="Progress:", suffix="Complete", length=50
@@ -397,7 +407,11 @@ class ObjectHandler(osmium.SimpleHandler):
             empty_zones += 1  # increment another empty zone
 
             # sample a grid
-            points = helpers.area_grid(area=area.geom, spacing=spacing)
+            if fill_method == "spacing":
+                points = helpers.area_grid(area=area.geom, spacing=spacing)
+            elif fill_method == "point_source":
+                available_points = gdf_point_source[gdf_point_source.intersects(area.geom)].geometry
+                points = [i for i in zip(available_points.x, available_points.y)]
             for point in points:  # add objects built from grid
                 self.objects.auto_insert(
                     helpers.fill_object(i, point, size, new_osm_tags, new_tags, required_acts)

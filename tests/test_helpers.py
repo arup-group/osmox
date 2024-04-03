@@ -1,4 +1,6 @@
+import geopandas as gpd
 import pytest
+from geopandas.testing import assert_geodataframe_equal
 from osmox import helpers
 from shapely.geometry import Polygon
 
@@ -72,3 +74,26 @@ def test_height_to_m(inp, expected):
 )
 def test_imperial_to_metric(inp, expected):
     assert helpers.imperial_to_metric(inp) == expected
+
+
+@pytest.fixture(params=["GeoJSON", "GPKG", "parquet"])
+def file_format_data(tmp_path, request):
+    gdf = gpd.GeoDataFrame(
+        geometry=gpd.points_from_xy(x=[0, 1, 0, 1], y=[0, 0, 1, 1], crs="epsg:27700")
+    )
+    kwargs = {}
+    if request.param == "parquet":
+        func = "to_parquet"
+    else:
+        func = "to_file"
+        kwargs["driver"] = request.param
+    filepath = tmp_path / f"test_{request.param}.{request.param.lower()}"
+    getattr(gdf, func)(filepath, **kwargs)
+
+    return filepath, gdf
+
+
+def test_read_geofile(file_format_data):
+    filepath, gdf = file_format_data
+    new_gdf = helpers.read_geofile(filepath)
+    assert_geodataframe_equal(gdf, new_gdf)
