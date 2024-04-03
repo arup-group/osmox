@@ -365,21 +365,39 @@ class ObjectHandler(osmium.SimpleHandler):
         point_source: Optional[str] = None,
         spacing: Optional[tuple[int, int]] = (25, 25),
     ) -> tuple[int, int]:
-        """
-        Fill "empty" areas with new objects. Empty areas are defined as areas with the select_tags but
-        not containing any objects of the required_acts.
+        """Fill "empty" areas with new objects.
+
+        Empty areas are defined as areas with the select_tags but not containing any objects of the required_acts.
+
         An example of such missing objects would be missing home facilities in a residential area.
-        Empty areas are filled with new objects of given size at given spacing.
+        Empty areas are filled with new objects of given size at given spacing / using point source data.
 
-        :param area_tags: Optional tuple to define (any) osm tags of areas to be considered. Defaults to ("landuse",
-        "residential")
-        :param required_acts: Optional string value representing expected (any) object activity types to be found in
-        areas.Defaults to "home"
-        :param new_tags: Optional tuple of tags for new objects. Defaults to ("building", "house").
-        :param size:  Optional tuple of x,y dimensions of new object polygon (i.e. building footprint). Defaults to (10, 10)
-        :param spacing:  Optional tuple of x,y dimensions of new objects centre-point spacing. Defaults to (25, 25)
+        Args:
+            area_tags (tuple, optional):
+                Tuple to define (any) osm tags of areas to be considered.
+                Defaults to ("landuse", "residential").
+            required_acts (str, optional):
+                String value representing expected (any) object activity types to be found in areas.
+                Defaults to "home".
+            new_tags (tuple, optional): Tags for new objects. Defaults to ("building", "house").
+            size (tuple[int, int], optional):
+                x,y dimensions of new object polygon (i.e. building footprint).
+                Defaults to (10, 10).
+            fill_method (Literal[spacing, point_source], optional):
+                Method to use to distribute buildings within the tagged areas.
+                Defaults to "spacing".
+            point_source (Optional[str], optional):
+                Path to geospatial data file (that can be loaded by GeoPandas) containing point source data to fill tagged areas, if using `point_source` fill method.
+                Defaults to None.
+            spacing (Optional[tuple[int, int]], optional):
+                x,y dimensions of new objects centre-point spacing, if using `spacing` fill method.
+                Defaults to (25, 25).
 
-        :returns: A tuple of two ints representing number of empty zones, number of new objects
+        Raises:
+            ValueError: If using point source infill method, a point source data file must be defined.
+
+        Returns:
+            tuple[int, int]: A tuple of two ints representing number of empty zones, number of new objects
         """
 
         empty_zones = 0  # conuter for fill zones
