@@ -222,7 +222,7 @@ class TestMissingActivity:
     def point_source_filepath(self, tmp_path):
 
         gdf = gpd.GeoDataFrame(
-            geometry=gpd.points_from_xy(x=[0, 1, 10, 200], y=[0, 101, 20, 1], crs="epsg:27700")
+            geometry=gpd.points_from_xy(x=[0, 1, 10, 200], y=[0, 101, 20, 1], crs="epsg:4326")
         )
         filepath = tmp_path / "point_source.parquet"
         gdf.to_parquet(filepath)

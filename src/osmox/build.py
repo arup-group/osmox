@@ -410,7 +410,7 @@ class ObjectHandler(osmium.SimpleHandler):
                 raise ValueError(
                     "Missing activity fill method expects a path to a point source geospatial data file, received None"
                 )
-            gdf_point_source = helpers.read_geofile(point_source)
+            gdf_point_source = helpers.read_geofile(point_source).to_crs(self.crs)
 
         for area in helpers.progressBar(
             self.areas, prefix="Progress:", suffix="Complete", length=50
