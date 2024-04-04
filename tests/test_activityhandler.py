@@ -124,67 +124,69 @@ def test_leisure_handler(leisureHandler):
     assert "leisure" in set(df.activity)
 
 
-def test_activities_from_area_intersection(testHandler):
-    testHandler.add_object(
-        idx=0,
-        activity_tags=[["test_tag", "test_value"]],
-        osm_tags=[["test", "test"]],
-        geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]),
-    )
-    testHandler.add_object(
-        idx=0,
-        activity_tags=[["test_tag", "test_value"]],
-        osm_tags=[["test", "test"]],
-        geom=Point((1, 1)),
-    )
-    testHandler.add_object(
-        idx=0,
-        activity_tags=[["test_tag", "test_value"]],
-        osm_tags=[["test", "test"]],
-        geom=Point((100, 100)),
-    )
-    for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
-        o.activities = acts
+class TestAreaActIntersection:
+    @pytest.fixture
+    def updated_handler(self, testHandler):
+        testHandler.add_object(
+            idx=0,
+            activity_tags=[["test_tag", "test_value"]],
+            osm_tags=[["test", "test"]],
+            geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]),
+        )
+        testHandler.add_object(
+            idx=0,
+            activity_tags=[["test_tag", "test_value"]],
+            osm_tags=[["test", "test"]],
+            geom=Point((1, 1)),
+        )
+        testHandler.add_object(
+            idx=0,
+            activity_tags=[["test_tag", "test_value"]],
+            osm_tags=[["test", "test"]],
+            geom=Point((100, 100)),
+        )
+        for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
+            o.activities = acts
+        return testHandler
 
-    acts = testHandler.activities_from_area_intersection(
-        Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)])
-    )
-    assert acts == set(["a", "b", "c"])
+    @pytest.fixture
+    def get_required_activities_in_target(self, updated_handler):
+        def _get_required_activities_in_target(required_activities):
+            return updated_handler._required_activities_in_target(
+                required_activities, Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)]), (10, 10)
+            )
 
+        return _get_required_activities_in_target
 
-def test_required_activities_in_target(testHandler):
-    testHandler.add_object(
-        idx=0,
-        activity_tags=[["test_tag", "test_value"]],
-        osm_tags=[["test", "test"]],
-        geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]),
-    )
-    testHandler.add_object(
-        idx=0,
-        activity_tags=[["test_tag", "test_value"]],
-        osm_tags=[["test", "test"]],
-        geom=Point((1, 1)),
-    )
-    testHandler.add_object(
-        idx=0,
-        activity_tags=[["test_tag", "test_value"]],
-        osm_tags=[["test", "test"]],
-        geom=Point((100, 100)),
-    )
-    for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
-        o.activities = acts
+    def test_activities_from_area_intersection(self, updated_handler):
 
-    assert testHandler.required_activities_in_target(
-        required_activities=["a"], target=Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)])
-    )
+        acts = updated_handler._activities_from_area_intersection(
+            Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)]), (10, 10)
+        )
+        assert acts == {
+            "a": [Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])],
+            "b": [Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)])],
+            "c": [Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)])],
+        }
 
-    assert testHandler.required_activities_in_target(
-        required_activities=["b", "d"], target=Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)])
-    )
+    def test_required_activities_one_in_target(self, get_required_activities_in_target):
+        geom_list = get_required_activities_in_target(["a"])
+        assert geom_list == [Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])]
 
-    assert not testHandler.required_activities_in_target(
-        required_activities=["d"], target=Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)])
-    )
+    def test_required_activities_two_in_target(self, get_required_activities_in_target):
+        geom_list = get_required_activities_in_target(["a", "b"])
+        assert geom_list == [
+            Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]),
+            Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)]),
+        ]
+
+    def test_required_activities_one_in_one_out_target(self, get_required_activities_in_target):
+        geom_list = get_required_activities_in_target(["b", "d"])
+        assert geom_list == [Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)])]
+
+    def test_required_activities_one_out_target(self, get_required_activities_in_target):
+        geom_list = get_required_activities_in_target(["d"])
+        assert not geom_list
 
 
 class TestMissingActivity:
@@ -228,11 +230,32 @@ class TestMissingActivity:
         gdf.to_parquet(filepath)
         return filepath
 
+    @pytest.fixture
+    def updated_handler_with_required_act_geoms(self, updated_handler):
+        "Total default area: 300 units, compared to 10000 units for the target area (i.e. 0.03)"
+        updated_handler.add_object(
+            idx=0,
+            activity_tags=[["test_tag", "test_value"]],
+            osm_tags=[["test", "test"]],
+            geom=Point((1, 1)),  # area: size[0] * size[1]
+        )
+        updated_handler.add_object(
+            idx=0,
+            activity_tags=[["test_tag", "test_value"]],
+            osm_tags=[["test", "test"]],
+            geom=Polygon([(30, 40), (30, 60), (40, 60), (40, 40), (30, 40)]),  # area: 200 units
+        )
+        for object in updated_handler.objects:
+            if object.activities is None:
+                object.activities = ["d"]
+
+        return updated_handler
+
     def test_fill_missing_activities_single_building(self, updated_handler):
 
         updated_handler.fill_missing_activities(
             area_tags=[("landuse", "residential")],
-            required_acts=["d"],
+            required_acts="d",
             new_tags=[("building", "house")],
             size=(10, 10),
             spacing=(101, 101),
@@ -247,7 +270,7 @@ class TestMissingActivity:
 
         updated_handler.fill_missing_activities(
             area_tags=[("landuse", "residential")],
-            required_acts=["d"],
+            required_acts="d",
             new_tags=[("building", "house")],
             size=(10, 10),
             spacing=(100, 100),
@@ -270,7 +293,7 @@ class TestMissingActivity:
     ):
         updated_handler.fill_missing_activities(
             area_tags=[("landuse", "residential")],
-            required_acts=["d"],
+            required_acts="d",
             new_tags=[("building", "house")],
             size=(10, 10),
             fill_method="point_source",
@@ -296,11 +319,33 @@ class TestMissingActivity:
         ):
             updated_handler.fill_missing_activities(
                 area_tags=[("landuse", "residential")],
-                required_acts=["d"],
+                required_acts="d",
                 new_tags=[("building", "house")],
                 size=(10, 10),
                 fill_method="point_source",
             )
+
+    @pytest.mark.parametrize(
+        ["max_fraction", "expected_fill"], [(0, False), (0.02, False), (0.04, True)]
+    )
+    def test_fill_missing_activities_max_existing_acts_fraction(
+        self, updated_handler_with_required_act_geoms, max_fraction, expected_fill
+    ):
+        updated_handler_with_required_act_geoms.fill_missing_activities(
+            area_tags=[("landuse", "residential")],
+            required_acts="d",
+            new_tags=[("building", "house")],
+            size=(10, 10),
+            spacing=(100, 100),
+            fill_method="spacing",
+            max_existing_acts_fraction=max_fraction,
+        )
+
+        objects = [o for o in updated_handler_with_required_act_geoms.objects]
+        has_fill = any(
+            isinstance(house.idx, str) and house.idx.startswith("fill") for house in objects
+        )
+        assert has_fill is expected_fill
 
 
 class TestExtract:

@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Activity infilling can use a geospatial point data source to fill OSM `landuse` areas, e.g. postcode data points.
+- Activity infilling can take place in target areas that have existing facilities, using the `max_existing_acts_fraction` argument to set the area that existing facilities can already take up in the target geometry while still allowing infilling.
 
 ## [v0.2.0]
 

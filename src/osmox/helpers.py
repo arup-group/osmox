@@ -186,13 +186,18 @@ def area_grid(area, spacing):
 
 
 def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
-    dx, dy = size[0], size[1]
-    x, y = point
-    geom = Polygon([(x, y), (x + dx, y), (x + dx, y + dy), (x, y + dy), (x, y)])
+    geom = point_to_poly(point, size)
     idx = f"fill_{i}"
     object = build.Object(idx=idx, osm_tags=new_osm_tags, activity_tags=new_tags, geom=geom)
     object.activities = list(required_acts)
     return object
+
+
+def point_to_poly(point: tuple[float, float], size: tuple[float, float]) -> Polygon:
+    dx, dy = size[0], size[1]
+    x, y = point
+    geom = Polygon([(x, y), (x + dx, y), (x + dx, y + dy), (x, y + dy), (x, y)])
+    return geom
 
 
 def path_leaf(filepath):

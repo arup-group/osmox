@@ -64,6 +64,12 @@ def test_fill_objects():
     assert obj.activities == ["act"]
 
 
+def test_point_to_poly():
+    p = (0, 0)
+    poly = helpers.point_to_poly(p, [10, 10])
+    assert poly.equals(Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]))
+
+
 @pytest.mark.parametrize("inp,expected", [("2", 2.0), ("4m", 4.0), ("2ft", 6.0)])
 def test_height_to_m(inp, expected):
     assert helpers.height_to_m(inp) == expected
