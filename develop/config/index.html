@@ -459,6 +459,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Fill in Missing Activities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fill-with-grid-of-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fill with grid of objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fill-with-a-point-data-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fill with a point data source
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -827,6 +851,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Fill in Missing Activities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fill-with-grid-of-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fill with grid of objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fill-with-a-point-data-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fill with a point data source
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -973,8 +1021,9 @@ Any activities should therefore be included in the activity mapping part of the 
 You can use <code>osmox validate &lt;CONFIG PATH&gt;</code> to check if a config is correctly specified.</p>
 <h2 id="fill-in-missing-activities">Fill in Missing Activities<a class="headerlink" href="#fill-in-missing-activities" title="Permanent link">#</a></h2>
 <p>We have noted that it is not uncommon for some small areas to not have building objects, but to have an appropriate landuse area tagged as 'residential'.</p>
-<p>We therefore provide a very ad-hoc solution for filling in such areas with a grid of objects.
-This infill method only covers areas that do not have the required activities already within them.</p>
+<p>We therefore provide different methods for filling in areas, from <a href="#fill-with-grid-of-objects">a very ad-hoc solution for filling with a grid of objects</a> to <a href="#fill-with-a-point-data-source">a solution which relies on external source of building locations without any accompanying metadata</a>.</p>
+<p>These infill methods only cover areas that do not have any of the required activities already within them.</p>
+<h3 id="fill-with-grid-of-objects">Fill with grid of objects<a class="headerlink" href="#fill-with-grid-of-objects" title="Permanent link">#</a></h3>
 <p>For example, given an area tagged as <code>landuse:residential</code> by OSM that does not contain any object of activity type <code>home</code>, the fill in method will add a grid of new objects tagged <code>building:house</code>.
 The new objects will also have activity type <code>home</code>, size <code>10 by 10</code> and be spaced at <code>25 by 25</code>:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
@@ -986,10 +1035,11 @@ The new objects will also have activity type <code>home</code>, size <code>10 by
 </span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">                </span><span class="nt">&quot;required_acts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;home&quot;</span><span class="p">],</span>
 </span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">                </span><span class="nt">&quot;new_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;building&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;house&quot;</span><span class="p">]],</span>
 </span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">                </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">],</span>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">                </span><span class="nt">&quot;spacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="mi">25</span><span class="p">]</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">            </span><span class="p">}</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">        </span><span class="p">]</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="p">}</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">                </span><span class="nt">&quot;fill_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;spacing&quot;</span><span class="p">,</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">                </span><span class="nt">&quot;spacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="mi">25</span><span class="p">]</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">        </span><span class="p">]</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="p">}</span>
 </span></code></pre></div>
 <figure>
 <img src="../resources/activity-fill.png", width="100%", style="background-color:white;", alt="Isle of man distance_to_nearest_transit">
@@ -1012,19 +1062,54 @@ You can use <code>osmox validate &lt;CONFIG PATH&gt;</code> to check if a config
 </span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">                </span><span class="nt">&quot;required_acts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;home&quot;</span><span class="p">],</span>
 </span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">                </span><span class="nt">&quot;new_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;building&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;house&quot;</span><span class="p">]],</span>
 </span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">                </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">],</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">                </span><span class="nt">&quot;spacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="mi">25</span><span class="p">]</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">            </span><span class="p">},</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">            </span><span class="p">{</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">                </span><span class="nt">&quot;area_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;landuse&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;forest&quot;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;landuse&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;orchard&quot;</span><span class="p">]],</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">                </span><span class="nt">&quot;required_acts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tree_climbing&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;glamping&quot;</span><span class="p">],</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">                </span><span class="nt">&quot;new_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;amenity&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tree&quot;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;building&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tree house&quot;</span><span class="p">]],</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">                </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">],</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">                </span><span class="nt">&quot;spacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">]</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">            </span><span class="p">}</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">        </span><span class="p">]</span>
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">    </span><span class="err">....</span>
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="p">}</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">                </span><span class="nt">&quot;fill_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;spacing&quot;</span><span class="p">,</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">                </span><span class="nt">&quot;spacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="mi">25</span><span class="p">]</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">            </span><span class="p">},</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">            </span><span class="p">{</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">                </span><span class="nt">&quot;area_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;landuse&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;forest&quot;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;landuse&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;orchard&quot;</span><span class="p">]],</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">                </span><span class="nt">&quot;required_acts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tree_climbing&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;glamping&quot;</span><span class="p">],</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">                </span><span class="nt">&quot;new_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;amenity&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tree&quot;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;building&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tree house&quot;</span><span class="p">]],</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">                </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">],</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">                </span><span class="nt">&quot;fill_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;spacing&quot;</span><span class="p">,</span>
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">                </span><span class="nt">&quot;spacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">]</span>
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">        </span><span class="p">]</span>
+</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">    </span><span class="err">....</span>
+</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="p">}</span>
 </span></code></pre></div>
+<h3 id="fill-with-a-point-data-source">Fill with a point data source<a class="headerlink" href="#fill-with-a-point-data-source" title="Permanent link">#</a></h3>
+<p>Instead of filling with a predefined spacing, a user can also use the <code>fill_method="point_source"</code> configuration option to load point data from a geospatial data file.
+These points will be masked using land use data, retaining only those that exist within the tagged areas.
+This is particularly useful in countries which supply open postal address data (e.g., the US and UK), which pinpoints building locations but does not match them to activity data.</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="err">...</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">&quot;fill_missing_activities&quot;</span><span class="p">:</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="p">[</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">            </span><span class="p">{</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">                </span><span class="nt">&quot;area_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;landuse&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;residential&quot;</span><span class="p">]],</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">                </span><span class="nt">&quot;required_acts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;home&quot;</span><span class="p">],</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">                </span><span class="nt">&quot;new_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;building&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;house&quot;</span><span class="p">]],</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">                </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">],</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">                </span><span class="nt">&quot;fill_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;point_source&quot;</span><span class="p">,</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">                </span><span class="nt">&quot;point_source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/file.geojson&quot;</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">        </span><span class="p">]</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="p">}</span>
+</span></code></pre></div>
+<figure>
+<img src="../resources/activity-fill-ps.png", width="100%", style="background-color:white;", alt="Suffolk data point missing activity fill">
+<figcaption>Comparison of using a point source and even spacing to fill missing activities for a residential area in Suffolk, UK.
+In this example, the point source is the UK <a href="https://osdatahub.os.uk/downloads/open/OpenUPRN">open UPRN dataset</a>.</figcaption>
+</figure>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The point source file can be a GeoParquet file or any format supported by GeoPandas/fiona (ESRI shapefile, GeoPackage, etc.).</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If using the <code>point_source</code> <code>fill_method</code>, the <code>spacing</code> configuration option will have no effect.</p>
+</div>
 
 
 
