@@ -295,3 +295,20 @@ A value of 0.05 would allow target areas with up to 5% of the land area occupied
         ]
 }
 ```
+
+In the following images we can see two areas that require setting a `max_existing_acts_fraction` above zero to accomplish infilling.
+In the first, almost all of the area required infilling.
+In the second, some of the area was already captured by OSM data, but infilling proved to still be necessary to fill the remainder of the area.
+
+<figure>
+<img src="../resources/activity-fill-5pc.png", width="100%", style="background-color:white;", alt="Suffolk data point missing activity fill allowing infilling where up to 5% of the area is already occupied">
+<figcaption>Example of filling missing activities for a residential area in Suffolk, UK with a small number of existing "home" activities in that area.
+In this example, the point source infill method was used.</figcaption>
+</figure>
+
+<figure>
+<img src="../resources/activity-fill-5pc-overlap.png", width="100%", style="background-color:white;", alt="Suffolk data point missing activity fill allowing infilling where up to 5% of the area is already occupied">
+<figcaption>Example of filling missing activities for a residential area in Suffolk, UK with a clear overlap between infill and existing "home" activities in that area.
+Even though there is overlap, the infilling is worthwhile as there are many missing points.
+In this example, the point source infill method was used.</figcaption>
+</figure>
