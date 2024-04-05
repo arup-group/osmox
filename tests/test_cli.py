@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-from osmox import cli
+from osmox import cli, helpers
 
 logging.basicConfig(level=logging.INFO)
 
@@ -19,7 +19,7 @@ def fixtures_root():
 
 @pytest.fixture
 def config_path(fixtures_root):
-    return os.path.join(fixtures_root, "test_config.json")
+    return os.path.join(fixtures_root, "test_config_infill.json")
 
 
 @pytest.fixture
@@ -73,8 +73,13 @@ def test_cli_output_formats(
         [config_path, toy_osm_path, path_output_dir, "-f", output_format, "-crs", "epsg:4326"],
     )
     check_exit_code(result)
+    new_file = default_output_file_path.with_suffix(MAP_EXTENSIONS[output_format])
+    assert new_file.exists()
 
-    assert default_output_file_path.with_suffix(MAP_EXTENSIONS[output_format]).exists()
+    # Check the saved files have data and they preserve the datatype of ID
+    new_gdf = helpers.read_geofile(new_file)
+    assert not new_gdf.empty
+    assert new_gdf["id"].apply(lambda x: isinstance(x, str)).all()
 
 
 @pytest.mark.parametrize("crs", ["epsg:27700"])
