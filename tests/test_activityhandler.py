@@ -131,7 +131,7 @@ class TestAreaActIntersection:
             idx=0,
             activity_tags=[["test_tag", "test_value"]],
             osm_tags=[["test", "test"]],
-            geom=Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]),
+            geom=Polygon([(0, 0), (0, 15), (10, 15), (10, 0), (0, 0)]),
         )
         testHandler.add_object(
             idx=0,
@@ -163,30 +163,23 @@ class TestAreaActIntersection:
         acts = updated_handler._activities_from_area_intersection(
             Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)]), (10, 10)
         )
-        assert acts == {
-            "a": [Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])],
-            "b": [Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)])],
-            "c": [Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)])],
-        }
+        assert acts == {"a": 150, "b": 100, "c": 100}
 
     def test_required_activities_one_in_target(self, get_required_activities_in_target):
-        geom_list = get_required_activities_in_target(["a"])
-        assert geom_list == [Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])]
+        geom_area = get_required_activities_in_target(["a"])
+        assert geom_area == 150
 
     def test_required_activities_two_in_target(self, get_required_activities_in_target):
-        geom_list = get_required_activities_in_target(["a", "b"])
-        assert geom_list == [
-            Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]),
-            Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)]),
-        ]
+        geom_area = get_required_activities_in_target(["a", "b"])
+        assert geom_area == 250
 
     def test_required_activities_one_in_one_out_target(self, get_required_activities_in_target):
-        geom_list = get_required_activities_in_target(["b", "d"])
-        assert geom_list == [Polygon([(1, 1), (11, 1), (11, 11), (1, 11), (1, 1)])]
+        geom_area = get_required_activities_in_target(["b", "d"])
+        assert geom_area == 100
 
     def test_required_activities_one_out_target(self, get_required_activities_in_target):
-        geom_list = get_required_activities_in_target(["d"])
-        assert not geom_list
+        geom_area = get_required_activities_in_target(["d"])
+        assert geom_area == 0
 
 
 class TestMissingActivity:
