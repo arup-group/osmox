@@ -361,7 +361,7 @@ class TestExtract:
         obj = gdf.iloc[0].to_dict()
         assert obj["activities"] == "a,b"
         assert obj["geometry"] == Point(0, 0)
-        assert obj["id"] == 0
+        assert obj["id"] == "0"
         assert obj["feature"] == 0
 
     def test_extract_single_use_object_geodataframe(self, updated_handler):
@@ -372,5 +372,5 @@ class TestExtract:
         for i in range(2):
             obj = gdf.iloc[i].to_dict()
             assert obj["geometry"] == Point(0, 0)
-            assert obj["id"] == 0
+            assert obj["id"] == "0"
             assert obj["feature"] == 0

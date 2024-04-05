@@ -164,7 +164,7 @@ class Object:
         Returbn a dict summary.
         """
         fixed = {
-            "id": self.idx,
+            "id": str(self.idx),
             "activities": ",".join(self.activities),
             "geometry": self.geom.centroid,
         }
@@ -175,7 +175,7 @@ class Object:
         Yield (dict) summaries for each each activity of an object.
         """
         for act in self.activities:
-            fixed = {"id": self.idx, "activity": act, "geometry": self.geom.centroid}
+            fixed = {"id": str(self.idx), "activity": act, "geometry": self.geom.centroid}
             yield {**fixed, **self.features}
 
 
