@@ -256,7 +256,16 @@ This is particularly useful in countries which supply open postal address data (
 }
 ```
 
+<figure>
+<img src="../resources/activity-fill-ps.png", width="100%", style="background-color:white;", alt="Suffolk data point missing activity fill">
+<figcaption>Comparison of using a point source and even spacing to fill missing activities for a residential area in Suffolk, UK.
+In this example, the point source is the UK <a href="https://osdatahub.os.uk/downloads/open/OpenUPRN">open UPRN dataset</a>.</figcaption>
+</figure>
+
 !!! note
+    The point source file can be a GeoParquet file or any format supported by GeoPandas/fiona (ESRI shapefile, GeoPackage, etc.).
+
+!!! warning
     If using the `point_source` `fill_method`, the `spacing` configuration option will have no effect.
 
 ### Fill in areas with existing facilities
