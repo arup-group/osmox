@@ -169,8 +169,11 @@ You can use `osmox validate <CONFIG PATH>` to check if a config is correctly spe
 
 We have noted that it is not uncommon for some small areas to not have building objects, but to have an appropriate landuse area tagged as 'residential'.
 
-We therefore provide a very ad-hoc solution for filling in such areas with a grid of objects.
-This infill method only covers areas that do not have the required activities already within them.
+We therefore provide different methods for filling in areas, from [a very ad-hoc solution for filling with a grid of objects](#fill-with-grid-of-objects) to [a solution which relies on external source of building locations without any accompanying metadata](#fill-with-a-point-data-source).
+
+These infill methods only cover areas that do not have any of the required activities already within them.
+
+### Fill with grid of objects
 
 For example, given an area tagged as `landuse:residential` by OSM that does not contain any object of activity type `home`, the fill in method will add a grid of new objects tagged `building:house`.
 The new objects will also have activity type `home`, size `10 by 10` and be spaced at `25 by 25`:
@@ -185,6 +188,7 @@ The new objects will also have activity type `home`, size `10 by 10` and be spac
                 "required_acts": ["home"],
                 "new_tags": [["building", "house"]],
                 "size": [10, 10],
+                "fill_method": "spacing",
                 "spacing": [25, 25]
             }
         ]
@@ -213,6 +217,7 @@ Multiple groups can also be defined, for example:
                 "required_acts": ["home"],
                 "new_tags": [["building", "house"]],
                 "size": [10, 10],
+                "fill_method": "spacing",
                 "spacing": [25, 25]
             },
             {
@@ -220,9 +225,45 @@ Multiple groups can also be defined, for example:
                 "required_acts": ["tree_climbing", "glamping"],
                 "new_tags": [["amenity", "tree"], ["building", "tree house"]],
                 "size": [3, 3],
+                "fill_method": "spacing",
                 "spacing": [8, 8]
             }
         ]
     ....
 }
 ```
+
+### Fill with a point data source
+
+Instead of filling with a predefined spacing, a user can also use the `fill_method="point_source"` configuration option to load point data from a geospatial data file.
+These points will be masked using land use data, retaining only those that exist within the tagged areas.
+This is particularly useful in countries which supply open postal address data (e.g., the US and UK), which pinpoints building locations but does not match them to activity data.
+
+```json
+{
+    ...
+    "fill_missing_activities":
+        [
+            {
+                "area_tags": [["landuse", "residential"]],
+                "required_acts": ["home"],
+                "new_tags": [["building", "house"]],
+                "size": [10, 10],
+                "fill_method": "point_source",
+                "point_source": "path/to/file.geojson"
+            }
+        ]
+}
+```
+
+<figure>
+<img src="../resources/activity-fill-ps.png", width="100%", style="background-color:white;", alt="Suffolk data point missing activity fill">
+<figcaption>Comparison of using a point source and even spacing to fill missing activities for a residential area in Suffolk, UK.
+In this example, the point source is the UK <a href="https://osdatahub.os.uk/downloads/open/OpenUPRN">open UPRN dataset</a>.</figcaption>
+</figure>
+
+!!! note
+    The point source file can be a GeoParquet file or any format supported by GeoPandas/fiona (ESRI shapefile, GeoPackage, etc.).
+
+!!! warning
+    If using the `point_source` `fill_method`, the `spacing` configuration option will have no effect.

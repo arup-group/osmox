@@ -1,7 +1,9 @@
 import logging
 from pathlib import Path
+from typing import Union
 
 import click
+import geopandas as gp
 from rtree import index
 from shapely.geometry import Point, Polygon
 
@@ -196,3 +198,11 @@ def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
 def path_leaf(filepath):
     folder_path = Path(filepath).parent
     return folder_path
+
+
+def read_geofile(filepath: Union[str, Path]) -> gp.GeoDataFrame:
+    filepath_extension = Path(filepath).suffixes
+    if ".parquet" in filepath_extension:
+        return gp.read_parquet(filepath)
+    else:
+        return gp.read_file(filepath)

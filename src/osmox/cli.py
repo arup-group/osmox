@@ -95,13 +95,7 @@ def run(config_path, input_path, output_name, format, crs, single_use, lazy):
     if cnfg.get("fill_missing_activities"):
         for group in cnfg["fill_missing_activities"]:
             logger.info(f" Filling missing activities: {group}.")
-            zones, objects = handler.fill_missing_activities(
-                area_tags=group["area_tags"],
-                required_acts=group["required_acts"],
-                new_tags=group["new_tags"],
-                size=group["size"],
-                spacing=group["spacing"],
-            )
+            zones, objects = handler.fill_missing_activities(**group)
             logger.info(f" Filled {zones} zones with {objects} objects.")
 
     if cnfg.get("object_features"):
