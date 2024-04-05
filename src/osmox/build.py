@@ -3,11 +3,12 @@ from collections import defaultdict, namedtuple
 from typing import Literal, Optional, Union
 
 import geopandas as gp
+import numpy as np
 import osmium
 import pandas as pd
 import shapely.wkb as wkblib
 from pyproj import CRS, Transformer
-from shapely.geometry import MultiPoint, Point, Polygon
+from shapely.geometry import MultiPoint, Polygon
 from shapely.ops import nearest_points, transform
 
 from osmox import helpers
@@ -418,15 +419,15 @@ class ObjectHandler(osmium.SimpleHandler):
                 )
             gdf_point_source = helpers.read_geofile(point_source).to_crs(self.crs)
 
-        for area in helpers.progressBar(
+        for target_area in helpers.progressBar(
             self.areas, prefix="Progress:", suffix="Complete", length=50
         ):
-            geom = area.geom
-            if not helpers.tag_match(a=area_tags, b=area.activity_tags):
+            geom = target_area.geom
+            if not helpers.tag_match(a=area_tags, b=target_area.activity_tags):
                 continue
 
-            activities_in_target = self._required_activities_in_target(required_acts, geom, size)
-            if self._activity_area_frac(geom, activities_in_target) > max_existing_acts_fraction:
+            area_of_acts_in_target = self._required_activities_in_target(required_acts, geom, size)
+            if area_of_acts_in_target / geom.area > max_existing_acts_fraction:
                 continue
 
             empty_zones += 1  # increment another empty zone
@@ -447,8 +448,8 @@ class ObjectHandler(osmium.SimpleHandler):
 
     def _required_activities_in_target(
         self, required_activities: list[str], target: Polygon, size: tuple[float, float]
-    ) -> list[Polygon]:
-        """Get list of activity geometries in target area.
+    ) -> float:
+        """Get total area occupied by existing required activities in target area.
 
         If necessary, create activity polygons from points using infill polygon size.
 
@@ -458,34 +459,37 @@ class ObjectHandler(osmium.SimpleHandler):
             size (tuple[float, float]): Assumed size of geometries if only available as points.
 
         Returns:
-            list[Polygon]: Geometries of required activities that exist within target area.
+            float: Total area occupied by existing required activities in target area.
         """
         found_activities = self._activities_from_area_intersection(target, size)
-        relevant_activity_polygons = []
-        for k, v in found_activities.items():
-            if k in required_activities:
-                relevant_activity_polygons.extend(v)
-        return relevant_activity_polygons
+        relevant_activity_area = sum(
+            v for k, v in found_activities.items() if k in required_activities
+        )
+        return relevant_activity_area
 
     def _activities_from_area_intersection(
-        self, target: Polygon, size: tuple[float, float]
-    ) -> dict[str, list[Polygon]]:
+        self, target: Polygon, default_size: tuple[float, float]
+    ) -> dict[str, float]:
+        """Calculate footprint of all facilities matching an activity in a target area.
+
+        Args:
+            target (Polygon): Target area in which to find facilities.
+            default_size (tuple[float, float]): x, y dimensions of a default facility polygon, to infill any point activities.
+
+        Returns:
+            dict[str, float]: Total area footprint of each activity in target area.
+        """
         objects = self.objects.intersection(target.bounds)
         objects = [o for o in objects if target.contains(o.geom)]
-        activity_polys = defaultdict(list)
+        activity_polys = defaultdict(float)
+        default_area = np.prod(default_size)
         for object in objects:
-            geom = object.geom
-            if isinstance(geom, Point):
-                geom = helpers.point_to_poly(tuple([geom.x, geom.y]), size)
+            obj_area = object.geom.area
+            if obj_area == 0:
+                obj_area = default_area
             for act in object.activities:
-                activity_polys[act].append(geom)
+                activity_polys[act] += obj_area
         return activity_polys
-
-    def _activity_area_frac(
-        self, target_area: Polygon, activities_in_target: list[Polygon]
-    ) -> float:
-        areas_acts_in_target = sum(geom.area for geom in activities_in_target)
-        return areas_acts_in_target / target_area.area
 
     def add_features(self):
         """
