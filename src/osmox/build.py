@@ -1,13 +1,14 @@
 import logging
-from collections import namedtuple
-from typing import Literal, Optional
+from collections import defaultdict, namedtuple
+from typing import Literal, Optional, Union
 
 import geopandas as gp
+import numpy as np
 import osmium
 import pandas as pd
 import shapely.wkb as wkblib
 from pyproj import CRS, Transformer
-from shapely.geometry import MultiPoint
+from shapely.geometry import MultiPoint, Polygon
 from shapely.ops import nearest_points, transform
 
 from osmox import helpers
@@ -358,19 +359,20 @@ class ObjectHandler(osmium.SimpleHandler):
     def fill_missing_activities(
         self,
         area_tags: tuple = ("landuse", "residential"),
-        required_acts: str = "home",
+        required_acts: Union[str, list[str]] = "home",
         new_tags: tuple = ("building", "house"),
         size: tuple[int, int] = (10, 10),
+        max_existing_acts_fraction: float = 0.0,
         fill_method: Literal["spacing", "point_source"] = "spacing",
         point_source: Optional[str] = None,
         spacing: Optional[tuple[int, int]] = (25, 25),
     ) -> tuple[int, int]:
         """Fill "empty" areas with new objects.
 
-        Empty areas are defined as areas with the select_tags but not containing any objects of the required_acts.
+        Empty areas are defined as areas with the select_tags but containing no / a maximum number of objects of the required_acts.
 
         An example of such missing objects would be missing home facilities in a residential area.
-        Empty areas are filled with new objects of given size at given spacing / using point source data.
+        Empty areas are filled with new objects of given size based on the user-defined fill method.
 
         Args:
             area_tags (tuple, optional):
@@ -381,8 +383,11 @@ class ObjectHandler(osmium.SimpleHandler):
                 Defaults to "home".
             new_tags (tuple, optional): Tags for new objects. Defaults to ("building", "house").
             size (tuple[int, int], optional):
-                x,y dimensions of new object polygon (i.e. building footprint).
+                x,y dimensions of new object polygon (i.e. building footprint), extending from the bottom-left.
                 Defaults to (10, 10).
+            max_existing_acts_fraction (float, optional):
+                Infill target areas only if there is at most this much area already taken up by `required_acts`.
+                Defaults to 0.0, i.e., if there are _any_ required activities already in a target area, do not infill.
             fill_method (Literal[spacing, point_source], optional):
                 Method to use to distribute buildings within the tagged areas.
                 Defaults to "spacing".
@@ -390,7 +395,7 @@ class ObjectHandler(osmium.SimpleHandler):
                 Path to geospatial data file (that can be loaded by GeoPandas) containing point source data to fill tagged areas, if using `point_source` fill method.
                 Defaults to None.
             spacing (Optional[tuple[int, int]], optional):
-                x,y dimensions of new objects centre-point spacing, if using `spacing` fill method.
+                x,y dimensions of new object bottom-left point spacing, if using `spacing` fill method.
                 Defaults to (25, 25).
 
         Raises:
@@ -400,10 +405,12 @@ class ObjectHandler(osmium.SimpleHandler):
             tuple[int, int]: A tuple of two ints representing number of empty zones, number of new objects
         """
 
-        empty_zones = 0  # conuter for fill zones
+        empty_zones = 0  # counter for fill zones
         i = 0  # counter for object id
         new_osm_tags = [OSMTag(key=k, value=v) for k, v in area_tags]
         new_tags = [OSMTag(key=k, value=v) for k, v in new_tags]
+        if not isinstance(required_acts, list):
+            required_acts = [required_acts]
 
         if fill_method == "point_source":
             if point_source is None:
@@ -412,23 +419,24 @@ class ObjectHandler(osmium.SimpleHandler):
                 )
             gdf_point_source = helpers.read_geofile(point_source).to_crs(self.crs)
 
-        for area in helpers.progressBar(
+        for target_area in helpers.progressBar(
             self.areas, prefix="Progress:", suffix="Complete", length=50
         ):
-
-            if not helpers.tag_match(a=area_tags, b=area.activity_tags):
+            geom = target_area.geom
+            if not helpers.tag_match(a=area_tags, b=target_area.activity_tags):
                 continue
 
-            if self.required_activities_in_target(required_acts, area.geom):
+            area_of_acts_in_target = self._required_activities_in_target(required_acts, geom, size)
+            if area_of_acts_in_target / geom.area > max_existing_acts_fraction:
                 continue
 
             empty_zones += 1  # increment another empty zone
 
             # sample a grid
             if fill_method == "spacing":
-                points = helpers.area_grid(area=area.geom, spacing=spacing)
+                points = helpers.area_grid(area=geom, spacing=spacing)
             elif fill_method == "point_source":
-                available_points = gdf_point_source[gdf_point_source.intersects(area.geom)].geometry
+                available_points = gdf_point_source[gdf_point_source.intersects(geom)].geometry
                 points = [i for i in zip(available_points.x, available_points.y)]
             for point in points:  # add objects built from grid
                 self.objects.auto_insert(
@@ -438,14 +446,50 @@ class ObjectHandler(osmium.SimpleHandler):
 
         return empty_zones, i
 
-    def required_activities_in_target(self, required_activities, target):
-        found_activities = self.activities_from_area_intersection(target)
-        return set(required_activities) & found_activities  # in both
+    def _required_activities_in_target(
+        self, required_activities: list[str], target: Polygon, size: tuple[float, float]
+    ) -> float:
+        """Get total area occupied by existing required activities in target area.
 
-    def activities_from_area_intersection(self, target):
+        If necessary, create activity polygons from points using infill polygon size.
+
+        Args:
+            required_activities (list[str]): Activities whose geometries will be kept.
+            target (Polygon): Target area in which to find activities.
+            size (tuple[float, float]): Assumed size of geometries if only available as points.
+
+        Returns:
+            float: Total area occupied by existing required activities in target area.
+        """
+        found_activities = self._activities_from_area_intersection(target, size)
+        relevant_activity_area = sum(
+            v for k, v in found_activities.items() if k in required_activities
+        )
+        return relevant_activity_area
+
+    def _activities_from_area_intersection(
+        self, target: Polygon, default_size: tuple[float, float]
+    ) -> dict[str, float]:
+        """Calculate footprint of all facilities matching an activity in a target area.
+
+        Args:
+            target (Polygon): Target area in which to find facilities.
+            default_size (tuple[float, float]): x, y dimensions of a default facility polygon, to infill any point activities.
+
+        Returns:
+            dict[str, float]: Total area footprint of each activity in target area.
+        """
         objects = self.objects.intersection(target.bounds)
         objects = [o for o in objects if target.contains(o.geom)]
-        return set([act for object in objects for act in object.activities])
+        activity_polys = defaultdict(float)
+        default_area = np.prod(default_size)
+        for object in objects:
+            obj_area = object.geom.area
+            if obj_area == 0:
+                obj_area = default_area
+            for act in object.activities:
+                activity_polys[act] += obj_area
+        return activity_polys
 
     def add_features(self):
         """

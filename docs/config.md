@@ -171,7 +171,7 @@ We have noted that it is not uncommon for some small areas to not have building 
 
 We therefore provide different methods for filling in areas, from [a very ad-hoc solution for filling with a grid of objects](#fill-with-grid-of-objects) to [a solution which relies on external source of building locations without any accompanying metadata](#fill-with-a-point-data-source).
 
-These infill methods only cover areas that do not have any of the required activities already within them.
+These infill methods can cover areas that do not have any of the required activities already within them, or [those with a user-defined percentage of the area already occupied by required activities](#fill-in-areas-with-existing-facilities).
 
 ### Fill with grid of objects
 
@@ -267,3 +267,48 @@ In this example, the point source is the UK <a href="https://osdatahub.os.uk/dow
 
 !!! warning
     If using the `point_source` `fill_method`, the `spacing` configuration option will have no effect.
+
+### Fill in areas with existing facilities
+
+By default, if there are any of the required activities in a target area, that area will not be infilled.
+You can allow for infilling in these areas by setting `max_existing_acts_fraction`.
+This is the fraction of a target area that can be taken up by existing required activities while still allowing infilling.
+A value of 0.05 would allow target areas with up to 5% of the land area occupied by required activities to still be infilled.
+
+!!! note
+    This may become messy at high fractions as the infilling will cover the whole area, including parts where there are existing required activities.
+
+```json
+{
+    ...
+    "fill_missing_activities":
+        [
+            {
+                "area_tags": [["landuse", "residential"]],
+                "required_acts": ["home"],
+                "new_tags": [["building", "house"]],
+                "size": [10, 10],
+                "fill_method": "spacing",
+                "spacing": [25, 25],
+                "max_existing_acts_fraction": 0.05
+            }
+        ]
+}
+```
+
+In the following images we can see two areas that require setting a `max_existing_acts_fraction` above zero to accomplish infilling.
+In the first, almost all of the area required infilling.
+In the second, some of the area was already captured by OSM data, but infilling proved to still be necessary to fill the remainder of the area.
+
+<figure>
+<img src="../resources/activity-fill-5pc.png", width="100%", style="background-color:white;", alt="Suffolk data point missing activity fill allowing infilling where up to 5% of the area is already occupied">
+<figcaption>Example of filling missing activities for a residential area in Suffolk, UK with a small number of existing "home" activities in that area.
+In this example, the point source infill method was used.</figcaption>
+</figure>
+
+<figure>
+<img src="../resources/activity-fill-5pc-overlap.png", width="100%", style="background-color:white;", alt="Suffolk data point missing activity fill allowing infilling where up to 5% of the area is already occupied">
+<figcaption>Example of filling missing activities for a residential area in Suffolk, UK with a clear overlap between infill and existing "home" activities in that area.
+Even though there is overlap, the infilling is worthwhile as there are many missing points.
+In this example, the point source infill method was used.</figcaption>
+</figure>
