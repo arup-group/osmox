@@ -1,0 +1,113 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OSMOX config schema",
+    "description": "Schema for the OSMOX config JSON file",
+    "type": "object",
+    "additionalProperties": false,
+    "$defs": {
+        "stringList": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^(\\*|\\w+)$"
+            }
+        }
+    },
+    "required": ["filter", "activity_mapping", "object_features"],
+    "properties": {
+        "filter": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": { "^(\\*|\\w+)$": { "$ref": "#/$defs/stringList" } }
+        },
+        "object_features": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": ["area", "levels", "floor_area", "units", "transit_distance"]
+            }
+        },
+        "distance_to_nearest": { "$ref": "#/$defs/stringList" },
+        "default_tags": { "type": "array", "items": { "$ref": "#/$defs/stringList" } },
+        "activity_mapping": {
+            "type": "object",
+            "require": [],
+            "additionalProperties": false,
+            "patternProperties": {
+                "^(\\*|\\w+)$": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": { "^(\\*|\\w+)$": { "$ref": "#/$defs/stringList" } }
+                }
+            }
+        },
+        "fill_missing_activities": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["area_tags", "required_acts", "new_tags"],
+                "allOf": [
+                    {
+                        "if": { "properties": {"fill_method": { "const": "spacing" } } },
+                        "then": { "required": ["spacing"]  }
+                    },
+                    {
+                        "if": { "properties": {"fill_method": { "const": "point_source" } }, "required": ["fill_method"] },
+                        "then": { "required": ["point_source"] },
+                        "else": { "required": ["spacing"] }
+                    }
+                ],
+                "properties": {
+                    "area_tags": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/stringList"
+                        }
+                    },
+                    "required_acts": {
+                        "oneOf": [
+                            {"type": "string", "pattern": "^(\\*|\\w+)$"},
+                            {"$ref": "#/$defs/stringList"}
+                        ]
+                    },
+                    "new_tags": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/$defs/stringList"
+                        }
+                    },
+                    "size": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
+                    },
+                    "spacing": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
+                    },
+                    "fill_method": {
+                        "type": "string",
+                        "enum": ["spacing", "point_source"]
+                    },
+                    "point_source": {
+                        "type": "string"
+                    },
+                    "max_existing_acts_fraction": {
+                        "type": "number",
+                        "minimum": 0
+                    }
+                }
+            }
+        }
+    }
+}

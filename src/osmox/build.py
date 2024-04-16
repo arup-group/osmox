@@ -15,7 +15,6 @@ from osmox import helpers
 
 OSMTag = namedtuple("OSMtag", "key value")
 OSMObject = namedtuple("OSMobject", "idx, activity_tags, geom")
-AVAILABLE_FEATURES = ["area", "levels", "floor_area", "units", "transit_distance"]
 
 
 class Object:
@@ -62,7 +61,7 @@ class Object:
         self.activity_tags = activity_tags
         self.geom = geom
         self.activities = None
-        self.features = {}
+        self.features: dict = {}
 
     def add_features(self, features):
         available = {
