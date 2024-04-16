@@ -1,0 +1,33 @@
+name: Publish
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  conda-upload:
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/conda-upload.yml@main
+    secrets:
+      ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+    with:
+      package_name: osmox
+      build_workflow: pre-release.yml
+      environment: release
+
+  
+  pip-upload:
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/pip-upload.yml@main
+    secrets:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+    with:
+      package_name: osmox
+      build_workflow: pre-release.yml
+      environment: release
+
+  
+  docs-stable:
+    permissions:
+      contents: write
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/docs-deploy.yml@main
+    with:
+      deploy_type: update_stable
