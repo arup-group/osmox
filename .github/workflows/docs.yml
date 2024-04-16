@@ -21,13 +21,3 @@ jobs:
     uses: arup-group/actions-city-modelling-lab/.github/workflows/docs-deploy.yml@main
     with:
       deploy_type: update_latest
-
-  slack-notify-ci-failure:
-    needs: [docs-test, docs-update-latest]
-    if: always() && contains(needs.*.result, 'failure')
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/slack-notify.yml@main
-    secrets: inherit
-    with:
-      result: 'failure'
-      channel: city-modelling-feeds
-      message: Docs Build
