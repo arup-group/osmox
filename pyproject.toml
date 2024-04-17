@@ -67,7 +67,8 @@ where = ["src"]
 [tool.setuptools.package-data]
 # Add file globs from the source code directory if they include non-py files that should be packaged
 # E.g. "fixtures/**/*"
-osmox = []
+# "py.typed" is added by default. It allows `mypy` to register the package as having type hints.
+osmox = ["py.typed"]
 
 
 [build-system]
