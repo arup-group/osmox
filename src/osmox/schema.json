@@ -4,10 +4,6 @@
     "description": "Schema for the OSMOX config JSON file.",
     "type": "object",
     "additionalProperties": false,
-    "$defs": {
-        "stringList": {
-        }
-    },
     "required": [
         "filter",
         "activity_mapping",
