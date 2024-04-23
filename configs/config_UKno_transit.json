@@ -1,4 +1,5 @@
 {
+    "$schema": "../src/osmox/schema.json",
     "filter": {
         "building": [
             "apartments",
@@ -34,7 +35,7 @@
             "sports_hall",
             "stadium",
             "yes"
-        ]        
+        ]
     },
 
     "object_features": ["units", "levels", "area", "floor_area"],

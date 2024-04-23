@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Configuration validation to use a JSON schema. Partially **backward-incompatible** since configuration errors now raise exceptions rather than logging a message to the `error` level [#56](https://github.com/arup-group/osmox/pull/56).
 - Recommended installation instructions changed from using `pip` to creating a `mamba` environment [#38](https://github.com/arup-group/osmox/pull/38).
 - Supported and tested Python versions updated to py3.10 - py3.12 [#38](https://github.com/arup-group/osmox/pull/38).
 - Majority of documentation moved from README to dedicated documentation site: https://arup-group.github.io/osmox [#40](https://github.com/arup-group/osmox/pull/40).
@@ -30,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Rendered JSON schema in documentation [#56](https://github.com/arup-group/osmox/pull/56).
 - Activity infilling can use a geospatial point data source to fill OSM `landuse` areas, e.g. postcode data points.
 - Activity infilling can take place in target areas that have existing facilities, using the `max_existing_acts_fraction` argument to set the area that existing facilities can already take up in the target geometry while still allowing infilling.
 
