@@ -1,8 +1,10 @@
 import tempfile
 from pathlib import Path
 
+import jsonschema2md
 import mkdocs.plugins
 from mkdocs.structure.files import File
+from osmox.config import SCHEMA
 
 TEMPDIR = tempfile.TemporaryDirectory()
 # Add to this list if you want to ignore any other source files from the documentation API reference
@@ -16,7 +18,7 @@ def on_files(files: list, config: dict, **kwargs):
     for file in Path("./resources").glob("**/*.*"):
         files.append(_new_file(file, config))
     files.append(_new_file(Path("./CHANGELOG.md"), config))
-
+    files.append(_schema_to_md(SCHEMA, config))
     api_nav = _api_gen(files, config)
     _update_nav(api_nav, config)
 
@@ -135,6 +137,34 @@ def _get_nav_list(nav: list[dict | str], ref: str) -> list:
     """
     nav_ref = [idx for idx in nav if isinstance(idx, dict) and set(idx.keys()) == {ref}][0]
     return nav_ref[ref]
+
+
+def _schema_to_md(schema: dict, config: dict) -> File:
+    """Parse a JSON schema to Markdown, edit some lines, then dump to file
+
+    Args:
+        schema (dict): Path to the YAML schema to be converted.
+    """
+    output_file = "schema.md"
+    output_full_filepath = Path(TEMPDIR.name) / output_file
+    output_full_filepath.parent.mkdir(exist_ok=True, parents=True)
+
+    parser = jsonschema2md.Parser()
+    parser.tab_size = 4
+
+    lines = parser.parse_schema(schema)
+
+    assert lines[2] == "## Properties\n\n"
+    del lines[2]
+
+    output_full_filepath.write_text("\n".join(lines))
+
+    return File(
+        path=output_file,
+        src_dir=TEMPDIR.name,
+        dest_dir=config["site_dir"],
+        use_directory_urls=config["use_directory_urls"],
+    )
 
 
 @mkdocs.plugins.event_priority(-100)
