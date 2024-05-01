@@ -17,7 +17,7 @@ def load(config_path):
 
 
 def validate(config):
-    validator = jsonschema.Draft202012Validator
+    validator = jsonschema.validators.validator_for(SCHEMA)
     validator.META_SCHEMA["unevaluatedProperties"] = False
     validator.check_schema(SCHEMA)
     jsonschema.validate(config, SCHEMA)
@@ -53,10 +53,10 @@ def get_tags(config):
 def validate_activity_config(config):
     validate(config)
     keys, tags = get_tags(config)
-    logger.warning(f"Configured OSM tag keys: {sorted(keys)}")
+    logger.info(f"Configured OSM tag keys: {sorted(keys)}")
 
     acts = get_acts(config)
-    logger.warning(f"Configured activities: {sorted(acts)}")
+    logger.info(f"Configured activities: {sorted(acts)}")
 
     if "distance_to_nearest" in config:
         act_diff = set(config["distance_to_nearest"]).difference(acts)

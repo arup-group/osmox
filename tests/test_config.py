@@ -50,7 +50,7 @@ def strict_schema_validator():
         "$ref": "https://json-schema.org/draft/2020-12/schema",
         "unevaluatedProperties": False,
     }
-    return jsonschema.Draft202012Validator(strict)
+    return jsonschema.validators.validator_for(strict)
 
 
 def test_schema(strict_schema_validator):

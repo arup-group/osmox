@@ -160,15 +160,15 @@
         "office": {
             "*": ["work"]
         },
-		"public_transport": {
-			"*": ["transit"]
-		},
-		"highway": {
-			"bus_stop": ["transit"]
-		}
+        "public_transport": {
+            "*": ["transit"]
+        },
+        "highway": {
+            "bus_stop": ["transit"]
+        }
     },
 
-	"fill_missing_activities":
+    "fill_missing_activities":
     [
         {
             "area_tags": [["landuse", "residential"]],
