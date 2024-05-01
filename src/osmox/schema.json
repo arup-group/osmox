@@ -1,0 +1,251 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OSMOX config schema",
+    "description": "Schema for the OSMOX config JSON file.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "filter",
+        "activity_mapping",
+        "object_features"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to OSMOX schema (URL or filepath). Setting this value will enable your IDE to highlight issues with your configuration."
+        },
+        "filter": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^\\w+$": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^(\\*|\\w+)$"
+                    },
+                    "description": "List of tag values to filter. If all values should be used, use the '*' wildcard value."
+                }
+            },
+            "description": "Filter OSM data to consider only these tags."
+        },
+        "object_features": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "area",
+                    "levels",
+                    "floor_area",
+                    "units",
+                    "transit_distance"
+                ]
+            },
+            "description": "Features of filtered OSM objects to keep in final facility dataset."
+        },
+        "distance_to_nearest": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^\\w+$"
+            },
+            "description": "For every facility, add distance to nearest activity for every activity in this list. Each activity distance will be provided as a new data column."
+        },
+        "default_tags": {
+            "type": "array",
+            "description": "For any filtered OSM object without any tags, use these tags as default.",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "pattern": "^\\w+$"
+                },
+                "description": "Tag [key, value] pairs.",
+                "minItems": 2,
+                "maxItems": 2
+            }
+        },
+        "activity_mapping": {
+            "type": "object",
+            "description": "Map filtered OSM objects to OSMOX activities.",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^\\w+$": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "OSM tag key name",
+                    "patternProperties": {
+                        "^(\\*|\\w+)$": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^\\w+$"
+                            },
+                            "description": "Key: OSM object tag values, Value: list of activities to map to. If all tag values should be mapped to the same activities, use the `*` wildcard as the key."
+                        }
+                    }
+                }
+            }
+        },
+        "fill_missing_activities": {
+            "type": "array",
+            "description": "Fill tagged areas found in OSM with points according to a given method.",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Activity filling configuration. Filling will take place in the order they are placed in the list.",
+                "required": [
+                    "area_tags",
+                    "required_acts",
+                    "new_tags"
+                ],
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "fill_method": {
+                                    "const": "spacing"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "spacing"
+                            ]
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "fill_method": {
+                                    "const": "point_source"
+                                }
+                            },
+                            "required": [
+                                "fill_method"
+                            ]
+                        },
+                        "then": {
+                            "required": [
+                                "point_source"
+                            ]
+                        },
+                        "else": {
+                            "required": [
+                                "spacing"
+                            ]
+                        }
+                    }
+                ],
+                "properties": {
+                    "area_tags": {
+                        "type": "array",
+                        "description": "Key:value pairs to filter on for infilling, often land use area tags (e.g. ['landuse', 'residential']",
+                        "default": [
+                            "landuse",
+                            "residential"
+                        ],
+                        "minItems": 1,
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^\\w+$"
+                            },
+                            "description": "Tag [key, value] pairs.",
+                            "minItems": 2,
+                            "maxItems": 2
+                        }
+                    },
+                    "required_acts": {
+                        "description": "Single activity or list of activities to look for in the filtered area. If present, infilling will not be undertaken (see `max_existing_acts_fraction` to set a threshold for when the presence of required activities will stop infilling).",
+                        "default": [
+                            "home"
+                        ],
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "pattern": "^\\w+$",
+                                "description": "Activity name."
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^\\w+$"
+                                },
+                                "description": "Activity names.",
+                                "minItems": 1
+                            }
+                        ]
+                    },
+                    "new_tags": {
+                        "type": "array",
+                        "description": "New OSM tags to assign to infilled facilities. These will be used to map to OSMOX activities using `activity_mapping`.",
+                        "default": [
+                            "building",
+                            "house"
+                        ],
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^\\w+$"
+                            },
+                            "description": "Tag [key, value] pairs.",
+                            "minItems": 2,
+                            "maxItems": 2
+                        }
+                    },
+                    "size": {
+                        "type": "array",
+                        "description": "Footprint of infilled facilities as [length/x, width/y] values, extending from the bottom-left of each point. Will be used to define the `area` feature of the infilled facilities.",
+                        "default": [
+                            10,
+                            10
+                        ],
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
+                    },
+                    "spacing": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "description": "Spacing between infilled facilities as [length/x, width/y] values from the bottom-left of each point. Will only be used if `fill_method` is `spacing`.",
+                        "default": [
+                            25,
+                            25
+                        ],
+                        "items": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
+                    },
+                    "fill_method": {
+                        "type": "string",
+                        "description": "Choice of infilling method. `spacing` will space infilled points evenly across each filtered area. `point_source` will use a user-defined dataset of points (e.g. addresses) to infill.",
+                        "default": "spacing",
+                        "enum": [
+                            "spacing",
+                            "point_source"
+                        ]
+                    },
+                    "point_source": {
+                        "type": "string",
+                        "description": "Path to geospatial dataset of points to use for infilling. Can be any format in [`geparquet`, `geojson`, `geopackage`]. Will only be used if `fill_method` is `point_source`"
+                    },
+                    "max_existing_acts_fraction": {
+                        "type": "number",
+                        "description": "Fraction of filtered area that can be occupied by existing required activities (given in `required_acts`) before infilling of that area will be skipped. Uses the `area` feature of facilities or the area inferred by `size`, if the facility is given only be a point.",
+                        "default": 0,
+                        "minimum": 0
+                    }
+                }
+            }
+        }
+    }
+}

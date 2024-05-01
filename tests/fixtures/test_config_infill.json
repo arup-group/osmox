@@ -159,15 +159,22 @@
         },
         "office": {
             "*": ["work"]
+        },
+        "public_transport": {
+            "*": ["transit"]
+        },
+        "highway": {
+            "bus_stop": ["transit"]
         }
     },
 
-	"fill_missing_activities":
+    "fill_missing_activities":
     [
         {
             "area_tags": [["landuse", "residential"]],
             "required_acts": ["home"],
             "new_tags": [["building", "house"]],
+            "fill_method": "spacing",
             "size": [10, 10],
             "spacing": [50, 50]
         }

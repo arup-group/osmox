@@ -1,5 +1,7 @@
+import logging
 import os
 
+import jsonschema
 import pytest
 from osmox import config
 
@@ -41,6 +43,21 @@ def valid_config():
     }
 
 
+@pytest.fixture
+def strict_schema_validator():
+    strict = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://json-schema.org/draft/2020-12/strict",
+        "$ref": "https://json-schema.org/draft/2020-12/schema",
+        "unevaluatedProperties": False,
+    }
+    return jsonschema.validators.validator_for(strict)
+
+
+def test_schema(strict_schema_validator):
+    strict_schema_validator.check_schema(config.SCHEMA)
+
+
 def test_load_config():
     cnfg = config.load(test_config_path)
     assert cnfg
@@ -72,44 +89,57 @@ def test_get_tags(valid_config):
 
 
 def test_valid_config_logging(caplog, valid_config):
+    caplog.set_level(logging.INFO)
     config.validate_activity_config(valid_config)
     assert "['delivery', 'food_shop', 'home', 'shop', 'social', 'transit', 'work']" in caplog.text
 
 
-def test_config_with_missing_filter_logging(caplog, valid_config):
+def test_config_with_missing_filter_logging(valid_config):
     valid_config.pop("filter")
-    config.validate_activity_config(valid_config)
-    assert "No 'filter' found in config." in caplog.text
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError, match="'filter' is a required property"
+    ):
+        config.validate_activity_config(valid_config)
 
 
-def test_config_with_missing_activity_mapping_logging(caplog, valid_config):
+def test_config_with_missing_activity_mapping_logging(valid_config):
     valid_config.pop("activity_mapping")
-    config.validate_activity_config(valid_config)
-    assert "No 'activity_config' found in config." in caplog.text
+
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError, match="'activity_mapping' is a required property"
+    ):
+        config.validate_activity_config(valid_config)
 
 
-def test_config_with_unsupported_object_features_logging(caplog, valid_config):
+def test_config_with_unsupported_object_features_logging(valid_config):
     valid_config["object_features"].append("invalid_feature")
-    config.validate_activity_config(valid_config)
-    assert "Unsupported features in config: {'invalid_feature'}," in caplog.text
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError, match="'invalid_feature' is not one of"
+    ):
+        config.validate_activity_config(valid_config)
 
 
-def test_config_with_unsupported_distance_to_nearest_activity_logging(caplog, valid_config):
+def test_config_with_unsupported_distance_to_nearest_activity_logging(valid_config):
     valid_config["distance_to_nearest"].append("invalid_activity")
-    config.validate_activity_config(valid_config)
-    assert "'Distance to nearest' has a non-configured activity 'invalid_activity'" in caplog.text
+    with pytest.raises(
+        ValueError,
+        match="'Distance to nearest' has non-configured activities: {'invalid_activity'}",
+    ):
+        config.validate_activity_config(valid_config)
 
 
-def test_config_with_missing_fill_missing_activities_key_logging(caplog, valid_config):
+def test_config_with_missing_fill_missing_activities_key_logging(valid_config):
     valid_config["fill_missing_activities"][0].pop("required_acts")
-    config.validate_activity_config(valid_config)
-    assert "'Fill missing activities' group is missing required key: required_acts" in caplog.text
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError, match="'required_acts' is a required property"
+    ):
+        config.validate_activity_config(valid_config)
 
 
-def test_config_with_invalid_activity_for_fill_missing_activities_logging(caplog, valid_config):
+def test_config_with_invalid_activity_for_fill_missing_activities_logging(valid_config):
     valid_config["fill_missing_activities"][0]["required_acts"].append("invalid_activity")
-    config.validate_activity_config(valid_config)
-    assert (
-        "'Fill missing activities' group has a non-configured activity 'invalid_activity'"
-        in caplog.text
-    )
+    with pytest.raises(
+        ValueError,
+        match="'Fill missing activities' group has non-configured activities: {'invalid_activity'}",
+    ):
+        config.validate_activity_config(valid_config)

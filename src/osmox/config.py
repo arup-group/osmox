@@ -1,15 +1,26 @@
+import importlib
 import json
 import logging
 
-from osmox import build
+import jsonschema
 
 logger = logging.getLogger(__name__)
+SCHEMA_FILE = importlib.resources.files("osmox") / "schema.json"
+with importlib.resources.as_file(SCHEMA_FILE) as f:
+    SCHEMA = json.load(f.open())
 
 
 def load(config_path):
     logger.warning(f"Loading config from '{config_path}'.")
     with open(config_path, "r") as read_file:
         return json.load(read_file)
+
+
+def validate(config):
+    validator = jsonschema.validators.validator_for(SCHEMA)
+    validator.META_SCHEMA["unevaluatedProperties"] = False
+    validator.check_schema(SCHEMA)
+    jsonschema.validate(config, SCHEMA)
 
 
 def get_acts(config):
@@ -40,48 +51,22 @@ def get_tags(config):
 
 
 def validate_activity_config(config):
+    validate(config)
+    keys, tags = get_tags(config)
+    logger.info(f"Configured OSM tag keys: {sorted(keys)}")
 
-    filter_config = config.get("filter")
-    if not filter_config:
-        logger.error("No 'filter' found in config.")
-
-    else:
-        keys, tags = get_tags(config)
-        logger.warning(f"Configured OSM tag keys: {sorted(keys)}")
-
-    activity_mapping = config.get("activity_mapping")
-    if activity_mapping:
-        acts = get_acts(config)
-        logger.warning(f"Configured activities: {sorted(acts)}")
-
-    else:
-        logger.error("No 'activity_config' found in config.")
-
-    if config.get("object_features"):
-        available = set(build.AVAILABLE_FEATURES)
-        unsupported = set(config.get("object_features")) - available
-        if unsupported:
-            logger.error(
-                f"Unsupported features in config: {unsupported}, please choose from: {available}."
-            )
+    acts = get_acts(config)
+    logger.info(f"Configured activities: {sorted(acts)}")
 
     if "distance_to_nearest" in config:
-        acts = get_acts(config=config)
-        for act in config["distance_to_nearest"]:
-            if act not in acts:
-                logger.error(f"'Distance to nearest' has a non-configured activity '{act}'")
+        act_diff = set(config["distance_to_nearest"]).difference(acts)
+        if act_diff:
+            raise ValueError(f"'Distance to nearest' has non-configured activities: {act_diff}")
 
     if "fill_missing_activities" in config:
-        required_keys = {"area_tags", "required_acts", "new_tags", "size", "spacing"}
-        acts = get_acts(config=config)
-
         for group in config["fill_missing_activities"]:
-            keys = list(group)
-            for k in required_keys:
-                if k not in keys:
-                    logger.error(f"'Fill missing activities' group is missing required key: {k}")
-            for act in group.get("required_acts", []):
-                if act not in acts:
-                    logger.error(
-                        f"'Fill missing activities' group has a non-configured activity '{act}'"
-                    )
+            act_diff = set(group.get("required_acts", [])).difference(acts)
+            if act_diff:
+                raise ValueError(
+                    f"'Fill missing activities' group has non-configured activities: {act_diff}"
+                )

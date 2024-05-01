@@ -1,4 +1,5 @@
 click < 9
+jsonschema >= 4, < 5
 geopandas >= 0.13, < 0.15
 osmium < 3.7
 pandas >= 1.5, < 3

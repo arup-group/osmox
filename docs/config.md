@@ -9,6 +9,10 @@ osmox validate <CONFIG PATH>
 
 OSMOX features and associated configurations are described in the sections below.
 
+!!! info "See also"
+    We use a configuration schema to validate the configuration files you input - malformed files will cause OSMOX to fail fast and early.
+    You can read a detailed description of the configuration as described in the schema [here](schema.md).
+
 !!! warning
     These configs get very long - see the full examples in the `configs` to get an idea.
 

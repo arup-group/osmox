@@ -5,6 +5,7 @@ nav:
   - quick_start.md
   - osmox_run.md
   - config.md
+  - Configuration schema: schema.md
   - Contributing: contributing.md
   - Changelog: CHANGELOG.md
   - Reference:
