@@ -1,3 +1,4 @@
+import logging
 import os
 
 import jsonschema
@@ -88,6 +89,7 @@ def test_get_tags(valid_config):
 
 
 def test_valid_config_logging(caplog, valid_config):
+    caplog.set_level(logging.INFO)
     config.validate_activity_config(valid_config)
     assert "['delivery', 'food_shop', 'home', 'shop', 'social', 'transit', 'work']" in caplog.text
 
