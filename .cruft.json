@@ -13,6 +13,7 @@
       "package_name": "osmox",
       "module_name": "osmox",
       "project_short_description": "A tool for extracting locations and features from OpenStreetMap (OSM) data.",
+      "project_visibility": "public",
       "upload_pypi_package": "y",
       "upload_conda_package": "y",
       "conda_channel": "city-modelling-lab",
