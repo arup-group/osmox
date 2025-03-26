@@ -6,28 +6,20 @@ on:
 
 jobs:
   conda-upload:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/conda-upload.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/conda-upload.yml@v1.1.0
     secrets:
       ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
     with:
       package_name: osmox
       build_workflow: pre-release.yml
       environment: release
+      destination: anaconda
 
   
-  pip-upload:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/pip-upload.yml@main
-    secrets:
-      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-    with:
-      package_name: osmox
-      build_workflow: pre-release.yml
-      environment: release
-
   
   docs-stable:
     permissions:
       contents: write
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/docs-deploy.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/docs-deploy.yml@v1.1.0
     with:
       deploy_type: update_stable

@@ -17,7 +17,6 @@ theme:
     - navigation.indexes
     - navigation.top
     - content.code.copy
-    - content.code.annotate
 repo_url: https://github.com/arup-group/osmox/
 site_dir: .docs
 markdown_extensions:
@@ -31,13 +30,12 @@ markdown_extensions:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
-  - pymdownx.inlinehilite
+  - pymdownx.inlinehilite:
+      style_plain_text: shell
   - pymdownx.superfences
   - pymdownx.snippets
   - pymdownx.tabbed:
       alternate_style: true
-  - pymdownx.tasklist:
-      clickable_checkbox: true
   - toc:
       permalink: "#"
       toc_depth: 3
