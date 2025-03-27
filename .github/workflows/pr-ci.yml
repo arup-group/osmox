@@ -39,7 +39,7 @@ jobs:
       upload_to_codecov: false
 
   test-coverage:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@v1.1.1
     with:
       os: ubuntu-latest
       py3version: "12"
@@ -48,4 +48,4 @@ jobs:
       upload_to_codecov: true
 
   cruft-check:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/template-check.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/template-check.yml@v1.1.1
