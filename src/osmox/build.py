@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict, namedtuple
-from typing import Literal, Optional, Union
+from typing import Literal
 
 import geopandas as gp
 import numpy as np
@@ -133,8 +133,7 @@ class Object:
             return True
 
     def assign_activities(self, activity_lookup, weight_calculations=None):
-        """
-        Create a list of unique activities based on activity tags.
+        """Create a list of unique activities based on activity tags.
         This method is currently kept here incase we want to deal with
         duplicate assignments differently in future.
         """
@@ -144,8 +143,7 @@ class Object:
         self.activities = list(act_set)
 
     def get_closest_distance(self, targets, name):
-        """
-        Calculate euclidean distance to nearest target
+        """Calculate euclidean distance to nearest target
         :params Multipoint targets: A Shapely Multipoint object of all targets
         """
         if not targets:
@@ -159,8 +157,7 @@ class Object:
         return self._transit_distance
 
     def summary(self):
-        """
-        Returbn a dict summary.
+        """Returbn a dict summary.
         """
         fixed = {
             "id": str(self.idx),
@@ -170,11 +167,14 @@ class Object:
         return {**fixed, **self.features}
 
     def single_activity_summaries(self):
-        """
-        Yield (dict) summaries for each each activity of an object.
+        """Yield (dict) summaries for each each activity of an object.
         """
         for act in self.activities:
-            fixed = {"id": str(self.idx), "activity": act, "geometry": self.geom.centroid}
+            fixed = {
+                "id": str(self.idx),
+                "activity": act,
+                "geometry": self.geom.centroid,
+            }
             yield {**fixed, **self.features}
 
 
@@ -184,7 +184,12 @@ class ObjectHandler(osmium.SimpleHandler):
     logger = logging.getLogger(__name__)
 
     def __init__(
-        self, config, crs="epsg:27700", from_crs="epsg:4326", lazy=False, level=logging.DEBUG
+        self,
+        config,
+        crs="epsg:27700",
+        from_crs="epsg:4326",
+        lazy=False,
+        level=logging.DEBUG,
     ):
 
         super().__init__()
@@ -216,8 +221,7 @@ class ObjectHandler(osmium.SimpleHandler):
             return helpers.dict_list_match(tags, self.filter)
 
     def get_filtered_tags(self, tags):
-        """
-        Return configured activity tags for an OSM object as list of OSMtags.
+        """Return configured activity tags for an OSM object as list of OSMtags.
         """
         if tags:
             tags = dict(tags)
@@ -235,18 +239,24 @@ class ObjectHandler(osmium.SimpleHandler):
         if geom:
             geom = transform(self.transformer.transform, geom)
             self.objects.auto_insert(
-                Object(idx=idx, osm_tags=osm_tags, activity_tags=activity_tags, geom=geom)
+                Object(
+                    idx=idx, osm_tags=osm_tags, activity_tags=activity_tags, geom=geom
+                )
             )
 
     def add_point(self, idx, activity_tags, geom):
         if geom:
             geom = transform(self.transformer.transform, geom)
-            self.points.auto_insert(OSMObject(idx=idx, activity_tags=activity_tags, geom=geom))
+            self.points.auto_insert(
+                OSMObject(idx=idx, activity_tags=activity_tags, geom=geom)
+            )
 
     def add_area(self, idx, activity_tags, geom):
         if geom:
             geom = transform(self.transformer.transform, geom)
-            self.areas.auto_insert(OSMObject(idx=idx, activity_tags=activity_tags, geom=geom))
+            self.areas.auto_insert(
+                OSMObject(idx=idx, activity_tags=activity_tags, geom=geom)
+            )
 
     def fab_point(self, n):
         try:
@@ -269,23 +279,30 @@ class ObjectHandler(osmium.SimpleHandler):
         # todo consider renaming activiity tags to filtered or selected tags
         if self.selects(n.tags):
             self.add_object(
-                idx=n.id, osm_tags=n.tags, activity_tags=activity_tags, geom=self.fab_point(n)
+                idx=n.id,
+                osm_tags=n.tags,
+                activity_tags=activity_tags,
+                geom=self.fab_point(n),
             )
         elif activity_tags:
-            self.add_point(idx=n.id, activity_tags=activity_tags, geom=self.fab_point(n))
+            self.add_point(
+                idx=n.id, activity_tags=activity_tags, geom=self.fab_point(n)
+            )
 
     def area(self, a):
         activity_tags = self.get_filtered_tags(a.tags)
         if self.selects(a.tags):
             self.add_object(
-                idx=a.id, osm_tags=a.tags, activity_tags=activity_tags, geom=self.fab_area(a)
+                idx=a.id,
+                osm_tags=a.tags,
+                activity_tags=activity_tags,
+                geom=self.fab_area(a),
             )
         elif activity_tags:
             self.add_area(idx=a.id, activity_tags=activity_tags, geom=self.fab_area(a))
 
     def assign_tags(self):
-        """
-        Assign unknown tags to buildings spatially.
+        """Assign unknown tags to buildings spatially.
         """
         if not self.lazy:
             self.assign_tags_full()
@@ -293,10 +310,8 @@ class ObjectHandler(osmium.SimpleHandler):
             self.assign_tags_lazy()
 
     def assign_tags_full(self):
+        """Assign unknown tags to buildings spatially.
         """
-        Assign unknown tags to buildings spatially.
-        """
-
         for obj in helpers.progressBar(
             self.objects, prefix="Progress:", suffix="Complete", length=50
         ):
@@ -323,7 +338,6 @@ class ObjectHandler(osmium.SimpleHandler):
 
     def assign_tags_lazy(self):
         """Assign tags if filtered object does not already have useful tags."""
-
         for obj in helpers.progressBar(
             self.objects, prefix="Progress:", suffix="Complete", length=50
         ):
@@ -358,13 +372,13 @@ class ObjectHandler(osmium.SimpleHandler):
     def fill_missing_activities(
         self,
         area_tags: tuple = ("landuse", "residential"),
-        required_acts: Union[str, list[str]] = "home",
+        required_acts: str | list[str] = "home",
         new_tags: tuple = ("building", "house"),
         size: tuple[int, int] = (10, 10),
         max_existing_acts_fraction: float = 0.0,
         fill_method: Literal["spacing", "point_source"] = "spacing",
-        point_source: Optional[str] = None,
-        spacing: Optional[tuple[int, int]] = (25, 25),
+        point_source: str | None = None,
+        spacing: tuple[int, int] | None = (25, 25),
     ) -> tuple[int, int]:
         """Fill "empty" areas with new objects.
 
@@ -403,7 +417,6 @@ class ObjectHandler(osmium.SimpleHandler):
         Returns:
             tuple[int, int]: A tuple of two ints representing number of empty zones, number of new objects
         """
-
         empty_zones = 0  # counter for fill zones
         i = 0  # counter for object id
         new_osm_tags = [OSMTag(key=k, value=v) for k, v in area_tags]
@@ -425,7 +438,9 @@ class ObjectHandler(osmium.SimpleHandler):
             if not helpers.tag_match(a=area_tags, b=target_area.activity_tags):
                 continue
 
-            area_of_acts_in_target = self._required_activities_in_target(required_acts, geom, size)
+            area_of_acts_in_target = self._required_activities_in_target(
+                required_acts, geom, size
+            )
             if area_of_acts_in_target / geom.area > max_existing_acts_fraction:
                 continue
 
@@ -435,11 +450,15 @@ class ObjectHandler(osmium.SimpleHandler):
             if fill_method == "spacing":
                 points = helpers.area_grid(area=geom, spacing=spacing)
             elif fill_method == "point_source":
-                available_points = gdf_point_source[gdf_point_source.intersects(geom)].geometry
-                points = [i for i in zip(available_points.x, available_points.y)]
+                available_points = gdf_point_source[
+                    gdf_point_source.intersects(geom)
+                ].geometry
+                points = [i for i in zip(available_points.x, available_points.y, strict=False)]
             for point in points:  # add objects built from grid
                 self.objects.auto_insert(
-                    helpers.fill_object(i, point, size, new_osm_tags, new_tags, required_acts)
+                    helpers.fill_object(
+                        i, point, size, new_osm_tags, new_tags, required_acts
+                    )
                 )
                 i += 1
 
@@ -491,8 +510,7 @@ class ObjectHandler(osmium.SimpleHandler):
         return activity_polys
 
     def add_features(self):
-        """
-        ["units", "floors", "area", "floor_area"]
+        """["units", "floors", "area", "floor_area"]
         """
         for obj in helpers.progressBar(
             self.objects, prefix="Progress:", suffix="Complete", length=50
@@ -500,8 +518,7 @@ class ObjectHandler(osmium.SimpleHandler):
             obj.add_features(self.object_features)
 
     def assign_nearest_distance(self, target_act):
-        """
-        For each facility, calculate euclidean distance to targets of given activity type.
+        """For each facility, calculate euclidean distance to targets of given activity type.
         """
         targets = self.extract_targets(target_act)
         for obj in helpers.progressBar(
@@ -510,8 +527,7 @@ class ObjectHandler(osmium.SimpleHandler):
             obj.get_closest_distance(targets, target_act)
 
     def extract_targets(self, target_act):
-        """
-        Find targets
+        """Find targets
         """
         targets = []
         for obj in self.objects:
@@ -523,11 +539,15 @@ class ObjectHandler(osmium.SimpleHandler):
 
         if single_use:
             df = pd.DataFrame(
-                (summary for o in self.objects for summary in o.single_activity_summaries())
+
+                    summary
+                    for o in self.objects
+                    for summary in o.single_activity_summaries()
+
             )
             return gp.GeoDataFrame(df, geometry="geometry", crs=self.crs)
 
-        df = pd.DataFrame((o.summary() for o in self.objects))
+        df = pd.DataFrame(o.summary() for o in self.objects)
         return gp.GeoDataFrame(df, geometry="geometry", crs=self.crs)
 
     # def extract(self):

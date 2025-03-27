@@ -12,7 +12,7 @@ with importlib.resources.as_file(SCHEMA_FILE) as f:
 
 def load(config_path):
     logger.warning(f"Loading config from '{config_path}'.")
-    with open(config_path, "r") as read_file:
+    with open(config_path) as read_file:
         return json.load(read_file)
 
 
@@ -61,7 +61,9 @@ def validate_activity_config(config):
     if "distance_to_nearest" in config:
         act_diff = set(config["distance_to_nearest"]).difference(acts)
         if act_diff:
-            raise ValueError(f"'Distance to nearest' has non-configured activities: {act_diff}")
+            raise ValueError(
+                f"'Distance to nearest' has non-configured activities: {act_diff}"
+            )
 
     if "fill_missing_activities" in config:
         for group in config["fill_missing_activities"]:

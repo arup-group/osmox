@@ -147,7 +147,9 @@ def _get_nav_list(nav: list[dict | str], ref: str) -> list:
     Returns:
         list: Nav sub-list linked to `ref`.
     """
-    nav_ref = [idx for idx in nav if isinstance(idx, dict) and set(idx.keys()) == {ref}][0]
+    nav_ref = [
+        idx for idx in nav if isinstance(idx, dict) and set(idx.keys()) == {ref}
+    ][0]
     return nav_ref[ref]
 
 

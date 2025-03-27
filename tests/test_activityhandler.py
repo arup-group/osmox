@@ -37,17 +37,24 @@ def test_object_assign_points():
     )
     tree = helpers.AutoTree()
     tree.auto_insert(
-        build.OSMObject(idx=0, activity_tags=[build.OSMTag(key="a", value="a")], geom=Point((0, 0)))
-    )
-    tree.auto_insert(
         build.OSMObject(
-            idx=0, activity_tags=[build.OSMTag(key="b", value="b")], geom=Point((10, 10))
+            idx=0, activity_tags=[build.OSMTag(key="a", value="a")], geom=Point((0, 0))
         )
     )
     tree.auto_insert(
         build.OSMObject(
             idx=0,
-            activity_tags=[build.OSMTag(key="c", value="c"), build.OSMTag(key="d", value="d")],
+            activity_tags=[build.OSMTag(key="b", value="b")],
+            geom=Point((10, 10)),
+        )
+    )
+    tree.auto_insert(
+        build.OSMObject(
+            idx=0,
+            activity_tags=[
+                build.OSMTag(key="c", value="c"),
+                build.OSMTag(key="d", value="d"),
+            ],
             geom=Point((1, -1)),
         )
     )
@@ -85,7 +92,10 @@ def test_object_assign_areas():
     tree.auto_insert(
         build.OSMObject(
             idx=0,
-            activity_tags=[build.OSMTag(key="c", value="c"), build.OSMTag(key="d", value="d")],
+            activity_tags=[
+                build.OSMTag(key="c", value="c"),
+                build.OSMTag(key="d", value="d"),
+            ],
             geom=Polygon([(-50, -50), (-50, 50), (50, 50), (50, -50), (-50, -50)]),
         )
     )
@@ -145,7 +155,7 @@ class TestAreaActIntersection:
             osm_tags=[["test", "test"]],
             geom=Point((100, 100)),
         )
-        for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
+        for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]], strict=False):
             o.activities = acts
         return testHandler
 
@@ -153,7 +163,9 @@ class TestAreaActIntersection:
     def get_required_activities_in_target(self, updated_handler):
         def _get_required_activities_in_target(required_activities):
             return updated_handler._required_activities_in_target(
-                required_activities, Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)]), (10, 10)
+                required_activities,
+                Polygon([(0, 0), (0, 50), (50, 50), (50, 0), (0, 0)]),
+                (10, 10),
             )
 
         return _get_required_activities_in_target
@@ -173,11 +185,15 @@ class TestAreaActIntersection:
         geom_area = get_required_activities_in_target(["a", "b"])
         assert geom_area == 250
 
-    def test_required_activities_one_in_one_out_target(self, get_required_activities_in_target):
+    def test_required_activities_one_in_one_out_target(
+        self, get_required_activities_in_target
+    ):
         geom_area = get_required_activities_in_target(["b", "d"])
         assert geom_area == 100
 
-    def test_required_activities_one_out_target(self, get_required_activities_in_target):
+    def test_required_activities_one_out_target(
+        self, get_required_activities_in_target
+    ):
         geom_area = get_required_activities_in_target(["d"])
         assert geom_area == 0
 
@@ -209,7 +225,7 @@ class TestMissingActivity:
             activity_tags=[["landuse", "residential"]],
             geom=Polygon([(0, 0), (0, 100), (100, 100), (100, 0), (0, 0)]),
         )
-        for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]]):
+        for o, acts in zip(testHandler.objects, [["a"], ["b", "c"], ["d"]], strict=False):
             o.activities = acts
         return testHandler
 
@@ -217,7 +233,9 @@ class TestMissingActivity:
     def point_source_filepath(self, tmp_path):
 
         gdf = gpd.GeoDataFrame(
-            geometry=gpd.points_from_xy(x=[0, 1, 10, 200], y=[0, 101, 20, 1], crs="epsg:4326")
+            geometry=gpd.points_from_xy(
+                x=[0, 1, 10, 200], y=[0, 101, 20, 1], crs="epsg:4326"
+            )
         )
         filepath = tmp_path / "point_source.parquet"
         gdf.to_parquet(filepath)
@@ -236,7 +254,9 @@ class TestMissingActivity:
             idx=0,
             activity_tags=[["test_tag", "test_value"]],
             osm_tags=[["test", "test"]],
-            geom=Polygon([(30, 40), (30, 60), (40, 60), (40, 40), (30, 40)]),  # area: 200 units
+            geom=Polygon(
+                [(30, 40), (30, 60), (40, 60), (40, 40), (30, 40)]
+            ),  # area: 200 units
         )
         for object in updated_handler.objects:
             if object.activities is None:
@@ -277,7 +297,13 @@ class TestMissingActivity:
         assert house.idx == "fill_3"
         assert house.geom.equals(
             Polygon(
-                [(100.0, 100.0), (110.0, 100.0), (110.0, 110.0), (100.0, 110.0), (100.0, 100.0)]
+                [
+                    (100.0, 100.0),
+                    (110.0, 100.0),
+                    (110.0, 110.0),
+                    (100.0, 110.0),
+                    (100.0, 100.0),
+                ]
             )
         )
 
@@ -297,12 +323,16 @@ class TestMissingActivity:
 
         house_1 = objects[-2]
         assert house_1.idx == "fill_0"
-        assert house_1.geom.equals(Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]))
+        assert house_1.geom.equals(
+            Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)])
+        )
 
         house_2 = objects[-1]
         assert house_2.idx == "fill_1"
         assert house_2.geom.equals(
-            Polygon([(10.0, 20.0), (20.0, 20.0), (20.0, 30.0), (10.0, 30.0), (10.0, 20.0)])
+            Polygon(
+                [(10.0, 20.0), (20.0, 20.0), (20.0, 30.0), (10.0, 30.0), (10.0, 20.0)]
+            )
         )
 
     def test_fill_missing_activities_data_point_source_missing(self, updated_handler):
@@ -336,7 +366,8 @@ class TestMissingActivity:
 
         objects = [o for o in updated_handler_with_required_act_geoms.objects]
         has_fill = any(
-            isinstance(house.idx, str) and house.idx.startswith("fill") for house in objects
+            isinstance(house.idx, str) and house.idx.startswith("fill")
+            for house in objects
         )
         assert has_fill is expected_fill
 
