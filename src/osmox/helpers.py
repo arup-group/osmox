@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Union
 
 import click
 import geopandas as gp
@@ -20,8 +19,7 @@ class PathPath(click.Path):
 
 
 class AutoTree(index.Index):
-    """
-    Spatial bounding box transforming (using pyproj) and indexing (using Rtree).
+    """Spatial bounding box transforming (using pyproj) and indexing (using Rtree).
     """
 
     def __init__(self):
@@ -50,8 +48,7 @@ class AutoTree(index.Index):
 
 
 def dict_list_match(d, dict_list):
-    """
-    Check if simple key value pairs from dict d are in dictionary of lists.
+    """Check if simple key value pairs from dict d are in dictionary of lists.
     eg:
     dict_list_match({1:2}, {1:[1,2,3]}) == True
     dict_list_match({1:4}, {1:[1,2,3]}) == False
@@ -65,8 +62,7 @@ def dict_list_match(d, dict_list):
 
 
 def height_to_m(height):
-    """
-    Parse height to float in metres.
+    """Parse height to float in metres.
     """
     height.strip()
 
@@ -99,8 +95,7 @@ def is_string_float(number):
 
 
 def imperial_to_metric(height):
-    """
-    Convert imperial (feet and inches) to metric (metres).
+    """Convert imperial (feet and inches) to metric (metres).
     Expect formatted as 3'4" (3 feet and 4 inches) or 3' (3 feet).
     Return float
     """
@@ -110,9 +105,10 @@ def imperial_to_metric(height):
     return round(inches / 39.3701, 3)
 
 
-def progressBar(iterable, prefix="", suffix="", decimals=1, length=100, fill="|", printEnd="\r"):
-    """
-    from here: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
+def progressBar(
+    iterable, prefix="", suffix="", decimals=1, length=100, fill="|", printEnd="\r"
+):
+    """From here: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     Call in a loop to create terminal progress bar
     @params:
         iteration   - Required  : current iteration (Int)
@@ -128,7 +124,9 @@ def progressBar(iterable, prefix="", suffix="", decimals=1, length=100, fill="|"
 
     # Progress Bar Printing Function
     def printProgressBar(iteration):
-        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        percent = ("{0:." + str(decimals) + "f}").format(
+            100 * (iteration / float(total))
+        )
         filledLength = int(length * iteration // total)
         bar = fill * filledLength + "-" * (length - filledLength)
         print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=printEnd)
@@ -144,8 +142,7 @@ def progressBar(iterable, prefix="", suffix="", decimals=1, length=100, fill="|"
 
 
 def get_distance(p):
-    """
-    Return the distance between two shapely points
+    """Return the distance between two shapely points
     Assumes orthogonal projection in meters
     :params tuple p: A tuple conctaining two Shapely points
 
@@ -188,7 +185,9 @@ def area_grid(area, spacing):
 def fill_object(i, point, size, new_osm_tags, new_tags, required_acts):
     geom = point_to_poly(point, size)
     idx = f"fill_{i}"
-    object = build.Object(idx=idx, osm_tags=new_osm_tags, activity_tags=new_tags, geom=geom)
+    object = build.Object(
+        idx=idx, osm_tags=new_osm_tags, activity_tags=new_tags, geom=geom
+    )
     object.activities = list(required_acts)
     return object
 
@@ -205,7 +204,7 @@ def path_leaf(filepath):
     return folder_path
 
 
-def read_geofile(filepath: Union[str, Path]) -> gp.GeoDataFrame:
+def read_geofile(filepath: str | Path) -> gp.GeoDataFrame:
     filepath_extension = Path(filepath).suffixes
     if ".parquet" in filepath_extension:
         return gp.read_parquet(filepath)

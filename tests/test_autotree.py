@@ -25,7 +25,9 @@ def test_autotree_point_point_intersection():
     tree.auto_insert(target)
     tree.auto_insert(
         build.OSMObject(
-            idx=0, activity_tags=[build.OSMTag(key="b", value="b")], geom=Point((10, 10))
+            idx=0,
+            activity_tags=[build.OSMTag(key="b", value="b")],
+            geom=Point((10, 10)),
         )
     )
     geom = Point((0, 0))
@@ -40,7 +42,9 @@ def test_autotree_point_poly_intersection():
     tree.auto_insert(target)
     tree.auto_insert(
         build.OSMObject(
-            idx=0, activity_tags=[build.OSMTag(key="b", value="b")], geom=Point((10, 10))
+            idx=0,
+            activity_tags=[build.OSMTag(key="b", value="b")],
+            geom=Point((10, 10)),
         )
     )
     geom = Polygon([(-1, -1), (-1, 1), (1, 1), (1, -1), (-1, -1)])
@@ -57,7 +61,9 @@ def test_autotree_poly_poly_intersection():
     tree.auto_insert(target)
     tree.auto_insert(
         build.OSMObject(
-            idx=0, activity_tags=[build.OSMTag(key="b", value="b")], geom=Point((10, 10))
+            idx=0,
+            activity_tags=[build.OSMTag(key="b", value="b")],
+            geom=Point((10, 10)),
         )
     )
     geom = Polygon([(-1, -1), (-1, 1), (1, 1), (1, -1), (-1, -1)])
@@ -69,7 +75,9 @@ def test_autotree_iter():
     for i in range(3):
         tree.auto_insert(
             build.OSMObject(
-                idx=0, activity_tags=[build.OSMTag(key="b", value="b")], geom=Point((10, 10))
+                idx=0,
+                activity_tags=[build.OSMTag(key="b", value="b")],
+                geom=Point((10, 10)),
             )
         )
     out = [o for o in tree]
