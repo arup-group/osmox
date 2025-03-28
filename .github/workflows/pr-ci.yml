@@ -11,15 +11,26 @@ on:
       - CONTRIBUTING.md
       - docs/**
       - mkdocs.yml
+      - ".github/**/*"
+      - "!.github/workflows/pr-ci.yml"
 
 jobs:
+  lint:
+    if: github.event.repository.private
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pre-commit/action@v3.0.1
+
   test:
+    needs: lint
+    if: always() && (needs.lint.result  == 'success' || needs.lint.result  == 'skipped')
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
         py3version: ["10", "12"]
       fail-fast: false
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@v1.1.0
     with:
       os: ${{ matrix.os }}
       py3version: ${{ matrix.py3version }}
@@ -28,7 +39,7 @@ jobs:
       upload_to_codecov: false
 
   test-coverage:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/python-install-lint-test.yml@v1.1.1
     with:
       os: ubuntu-latest
       py3version: "12"
@@ -37,4 +48,4 @@ jobs:
       upload_to_codecov: true
 
   cruft-check:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/template-check.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/template-check.yml@v1.1.1

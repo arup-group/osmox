@@ -41,3 +41,4 @@ mike-*.yml
 
 # Repository-specific
 example/
+.python-version

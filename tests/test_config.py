@@ -26,7 +26,10 @@ def valid_config():
                 "pub": ["social", "work", "delivery"],
                 "fast_food": ["work", "delivery", "food_shop"],
             },
-            "landuse": {"commercial": ["shop", "work", "delivery"], "residential": ["home"]},
+            "landuse": {
+                "commercial": ["shop", "work", "delivery"],
+                "residential": ["home"],
+            },
             "shop": {"*": ["shop", "work"]},
             "public_transport": {"*": ["transit"]},
             "highway": {"bus_stop": ["transit"]},
@@ -91,7 +94,10 @@ def test_get_tags(valid_config):
 def test_valid_config_logging(caplog, valid_config):
     caplog.set_level(logging.INFO)
     config.validate_activity_config(valid_config)
-    assert "['delivery', 'food_shop', 'home', 'shop', 'social', 'transit', 'work']" in caplog.text
+    assert (
+        "['delivery', 'food_shop', 'home', 'shop', 'social', 'transit', 'work']"
+        in caplog.text
+    )
 
 
 def test_config_with_missing_filter_logging(valid_config):
@@ -106,7 +112,8 @@ def test_config_with_missing_activity_mapping_logging(valid_config):
     valid_config.pop("activity_mapping")
 
     with pytest.raises(
-        jsonschema.exceptions.ValidationError, match="'activity_mapping' is a required property"
+        jsonschema.exceptions.ValidationError,
+        match="'activity_mapping' is a required property",
     ):
         config.validate_activity_config(valid_config)
 
@@ -131,13 +138,16 @@ def test_config_with_unsupported_distance_to_nearest_activity_logging(valid_conf
 def test_config_with_missing_fill_missing_activities_key_logging(valid_config):
     valid_config["fill_missing_activities"][0].pop("required_acts")
     with pytest.raises(
-        jsonschema.exceptions.ValidationError, match="'required_acts' is a required property"
+        jsonschema.exceptions.ValidationError,
+        match="'required_acts' is a required property",
     ):
         config.validate_activity_config(valid_config)
 
 
 def test_config_with_invalid_activity_for_fill_missing_activities_logging(valid_config):
-    valid_config["fill_missing_activities"][0]["required_acts"].append("invalid_activity")
+    valid_config["fill_missing_activities"][0]["required_acts"].append(
+        "invalid_activity"
+    )
     with pytest.raises(
         ValueError,
         match="'Fill missing activities' group has non-configured activities: {'invalid_activity'}",

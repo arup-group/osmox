@@ -7,20 +7,13 @@ on:
 
 jobs:
   conda-build:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/conda-build.yml@main
+    uses: arup-group/actions-city-modelling-lab/.github/workflows/conda-build.yml@v1.1.0
     secrets:
       ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
     with:
       package_name: osmox
       environment: pre-release
+      destination: pypi
 
   
-  pip-build:
-    uses: arup-group/actions-city-modelling-lab/.github/workflows/pip-build.yml@main
-    secrets:
-      TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
-    with:
-      package_name: osmox
-      environment: pre-release
-
   

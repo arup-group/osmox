@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/arup-group/cookiecutter-pypackage",
-  "commit": "b7724521f898ab28f541d492aff8e2be2ed76a01",
+  "commit": "2c07547902fe10839dcfb8031ef612bf7ca4f23f",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -13,13 +13,16 @@
       "package_name": "osmox",
       "module_name": "osmox",
       "project_short_description": "A tool for extracting locations and features from OpenStreetMap (OSM) data.",
-      "upload_pypi_package": "y",
+      "project_visibility": "public",
+      "upload_pip_package": "y",
       "upload_conda_package": "y",
+      "upload_aws_image": "n",
       "conda_channel": "city-modelling-lab",
       "command_line_interface": "y",
       "create_docker_file": "y",
       "create_author_file": "n",
       "create_jupyter_notebook_directory": "n",
+      "check_docs_accessibility_in_CI": "n",
       "open_source_license": "MIT license",
       "_template": "https://github.com/arup-group/cookiecutter-pypackage"
     }

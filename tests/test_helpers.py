@@ -48,8 +48,16 @@ def test_build_bounding_box_grid_from_areas(area, spacing, expected):
     [
         (Polygon([(0, 0), (0, 50), (50, 50), (0, 0)]), [100, 100], [(0, 0)]),
         (Polygon([(0, 0), (0, 50), (50, 50), (0, 0)]), [51, 51], [(0, 0)]),
-        (Polygon([(0, 0), (0, 50), (50, 50), (0, 0)]), [50, 50], [(0, 0), (0, 50), (50, 50)]),
-        (Polygon([(0, 0), (0, 50), (10, 50), (0, 0)]), [25, 25], [(0, 0), (0, 25), (0, 50)]),
+        (
+            Polygon([(0, 0), (0, 50), (50, 50), (0, 0)]),
+            [50, 50],
+            [(0, 0), (0, 50), (50, 50)],
+        ),
+        (
+            Polygon([(0, 0), (0, 50), (10, 50), (0, 0)]),
+            [25, 25],
+            [(0, 0), (0, 25), (0, 50)],
+        ),
     ],
 )
 def test_build_area_grid_from_areas(area, spacing, expected):
@@ -58,7 +66,9 @@ def test_build_area_grid_from_areas(area, spacing, expected):
 
 def test_fill_objects():
     p = (0, 0)
-    obj = helpers.fill_object(0, p, [10, 10], [["osm_tag", 1]], [["new_tags", 2]], ["act"])
+    obj = helpers.fill_object(
+        0, p, [10, 10], [["osm_tag", 1]], [["new_tags", 2]], ["act"]
+    )
     assert obj.geom.equals(Polygon([(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]))
     assert obj.idx == "fill_0"
     assert obj.activities == ["act"]

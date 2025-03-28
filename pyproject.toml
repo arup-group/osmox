@@ -25,40 +25,74 @@ directory = "reports/coverage"
 [tool.coverage.xml]
 output = "reports/coverage/coverage.xml"
 
-[tool.black]
-line-length = 100
-skip-magic-trailing-comma = true
-
 [tool.ruff]
 line-length = 100
+preview = true # required to activate many pycodestyle errors and warnings as of 2024-03-13
+
+[tool.ruff.format]
+exclude = [".*.egg-info", "requirements/**"]
+skip-magic-trailing-comma = true
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "Q"]
-
+select = [
+    # pycodestyle errors
+    "E",
+    # pycodestyle warnings
+    "W",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # Docstrings
+    "D"
+]
 ignore = [
-    "E501", # line too long: Black will handle this.
-    "D1",   # Ignore missing docstrings in public functions/modules. There are just too many of them missing...
+    # here and below, rules are redundant with formatter, see
+    # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "E501",
+    "W191",
+    "E111",
+    "E114",
+    "E117",
+    "D206",
+    "D300"
 ]
 
-# Exclude a variety of commonly ignored directories.
-exclude = [".*", "__pypackages__", "build", "dist", "venv", "reports/"]
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
 
 [tool.ruff.lint.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
 
-[tool.ruff.lint.per-file-ignores]
 # Ignore `E402` (import violations) and `F401` (unused imports) in all `__init__.py` files
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"]
+"*.ipynb" = ["E402"]
+"tests/*" = ["D"]
 
-[tool.ruff.lint.flake8-quotes]
-docstring-quotes = "double"
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 200
+ignore-overlong-task-comments = true
+
+[tool.codespell]
+skip = "tests/*.py,AUTHORS.md"
+count = ""
+quiet-level = 3
+# Uncomment and add words that are false flags as a comma delimited string
+# ignore-words-list = ""
 
 [tool.setuptools.packages.find]
 include = ["osmox*"]
